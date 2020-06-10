@@ -4,15 +4,15 @@
 - [ ]  Able to Parse issue description for 'blocks {other-issue}'  
 - [ ]  Able to scan all Issue comments for 'blocks {other-issue}'
 - [ ]  Able to check {other-issue} status = 'closed'
-- [ ]  Able to reopen Issue if any dependent issues are open.
-- [ ]  Able to scan issue comments for 'blocked by {issue}'   
-- [ ]  Track/count all watche repos on a per user basis
+- [ ]  Able to reopen issue if any dependent issues are open.
+- [ ]  Track/count all watched repos on a per user basis
 - [ ]  Charge user for all watched repos
 
 if issue-B 'blocks' issue-A, then issue-A cannot be closed if issue-B is still open.
 
 if issue-C is 'blocked by' issue-B then issue C cannot be closed if issue-B is still open.
-
+## V2
+- [ ]  Able to scan issue comments for 'blocked by {issue}'   
 
 
 ## Programmer Tasks
