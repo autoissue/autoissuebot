@@ -1,4 +1,8 @@
-on: [push]
+
+on:
+  issues:
+    types: closed
+  
 
 jobs:
   hello_world_job:
@@ -9,11 +13,11 @@ jobs:
       # you must check out the repository
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Hello world action step
+      - name: Github Action - Block Close Issues
         uses: ./ # Uses an action in the root directory
-        id: hello
+        id: gha_close_blocker 
         with:
           who-to-greet: 'Mona the Octocat'
       # Use the output from the `hello` step
       - name: Get the output time
-        run: echo "The time was ${{ steps.hello.outputs.time }}"
+        run: echo "The time was ${{ steps.gha_close_blocker.outputs.time }}"
