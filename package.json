@@ -8,5 +8,9 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "github-client": "^0.8.0",
+    "issue-parser": "^6.0.0"
+  }
 }
