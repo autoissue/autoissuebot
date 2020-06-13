@@ -1,23 +1,22 @@
-
+name: Reopen closed issues
 on:
   issues:
-    types: closed
-  
-
+    types: [ open, closed, edited ] 
+    # types: closed
+  issue_comment:
+    types: [ created, edited ]
 jobs:
-  hello_world_job:
+  maybe_reopen_issue:
     runs-on: ubuntu-latest
-    name: A job to say hello
     steps:
-      # To use this repository's private action,
-      # you must check out the repository
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Github Action - Block Close Issues
-        uses: ./ # Uses an action in the root directory
-        id: gha_close_blocker 
-        with:
-          who-to-greet: 'Mona the Octocat'
-      # Use the output from the `hello` step
-      - name: Get the output time
-        run: echo "The time was ${{ steps.gha_close_blocker.outputs.time }}"
+    # To use this repository's private action,
+    # you must check out the repository
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Block Closing Dependent Issue
+      uses: ./ # Uses an action in the root directory
+      id: gha_close_blocker 
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+
