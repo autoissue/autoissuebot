@@ -1,4 +1,6 @@
 #Default fake action.yml
+name: 'Hello World'
+description: 'Greet someone and record the time'
 inputs:
   numOctocats:
     description: 'Number of Octocats'
@@ -7,3 +9,8 @@ inputs:
   octocatEyeColor:
     description: 'Eye color of the Octocats'
     required: true
+runs:
+  using: 'node12'
+  main: 'index.js'
+
+
