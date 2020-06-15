@@ -5773,28 +5773,29 @@ const issueComments = octokit.issues.listComments({
   owner, repo, issue_number
 });
 */
+async function run() {
+  try {
+    // Get the JSON webhook payload for the event that triggered the workflow
+    const payload = github.context.payload;
+    //console.log(`The event payload: ${JSON.stringify(payload, null, 2)}`);
+    console.log(`repo info: ${JSON.stringify(payload.repository, null, 2)}`);
 
-try {
-  // Get the JSON webhook payload for the event that triggered the workflow
-  const payload = github.context.payload;
-  //console.log(`The event payload: ${JSON.stringify(payload, null, 2)}`);
-  
-  //octokit.paginate(
-  octokit.issues.listForRepo({
-    state: 'open',
-    owner:  github.context.payload.repository.owner.id,
-    repo:   github.context.payload.repository.full_name,
-  }).then((issues) => {
+    //octokit.paginate(
+    const issues = await octokit.issues.listForRepo({
+      state: 'open',
+      owner:  github.context.payload.repository.owner.login,
+      repo:   github.context.payload.repository.full_name,
+    });  
     console.log(`issues: ${JSON.stringify(issues, null, 2)}`);
-  })
 
+    //core.setOutput("time", time);
+  } catch (error) {
+    core.setFailed(error.message);
+  }
 
-  //core.setOutput("time", time);
-} catch (error) {
-  core.setFailed(error.message);
 }
 
-
+run();
 
 
 /***/ }),

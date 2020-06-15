@@ -17,11 +17,12 @@ async function run() {
     // Get the JSON webhook payload for the event that triggered the workflow
     const payload = github.context.payload;
     //console.log(`The event payload: ${JSON.stringify(payload, null, 2)}`);
+    console.log(`repo info: ${JSON.stringify(payload.repository, null, 2)}`);
 
     //octokit.paginate(
-    const issues = octokit.issues.listForRepo({
+    const issues = await octokit.issues.listForRepo({
       state: 'open',
-      owner:  github.context.payload.repository.owner.id,
+      owner:  github.context.payload.repository.owner.login,
       repo:   github.context.payload.repository.full_name,
     });  
     console.log(`issues: ${JSON.stringify(issues, null, 2)}`);
