@@ -2,13 +2,6 @@
 name: 'Hello World'
 description: 'Greet someone and record the time'
 inputs:
-  numOctocats:
-    description: 'Number of Octocats'
-    required: false
-    default: '1'
-  octocatEyeColor:
-    description: 'Eye color of the Octocats'
-    required: true
   repo-token:
     description: Repository token needed
     required: true
