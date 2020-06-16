@@ -5761,11 +5761,16 @@ module.exports = function (x) {
 
 const core = __webpack_require__(357);
 const github = __webpack_require__(955);
-const context = github.context;
 const issueParser = __webpack_require__(866);
+
+
+
+const context = github.context;
 const parse = issueParser('github', { actions: { blocks: ['blocks'] }});
 const repoToken = core.getInput('repo-token');
 const octokit = github.getOctokit(repoToken);
+
+const thisId = context.payload.issue.number;
 
 async function getAllIssues() {
   return await octokit.paginate(
@@ -5780,15 +5785,21 @@ async function run() {
   try {
     const allIssues = await getAllIssues();
     const blockers = allIssues.filter((issue) => { //filter out self
-      //console.log(`issuedata: ${JSON.stringify(issue, null, 2)}`);
-      return issue.number !== context.payload.issue.number;
-    }).filter((issue) => {
-      console.log(`issue: ${JSON.stringify(issue, null, 2)}`);
-      const parsedBody = parse(issue.body);
+      return issue.number !== thisId;
+    }).some((issue) => {
+      const parsedBody = parse(issue.body.toLowerCase());
       console.log(`parsed body: ${JSON.stringify(parsedBody, null, 2)}`);
-      return true;
+      return parsedBody.actions.blocks && parsedBody.actions.blocks[0].issue === thisId; 
     }); 
     console.log(`blockers: ${JSON.stringify(blockers, null, 2)}`);
+    if(blockers.length > 0) { 
+      octokit.issues.update({
+        owner:  context.repo.owner,
+        repo:   context.repo.repo,
+        issue_number:  thisId,
+        state: 'open',
+      })
+    }
     //core.setOutput("time", time);
 
   } catch (error) {
