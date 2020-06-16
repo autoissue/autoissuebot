@@ -5768,26 +5768,20 @@ const repoToken = core.getInput('repo-token');
 const octokit = github.getOctokit(repoToken);
 
 
-/*
-const issueComments = octokit.issues.listComments({
-  owner, repo, issue_number
-});
-*/
 async function run() {
   try {
     // Get the JSON webhook payload for the event that triggered the workflow
     const payload = github.context.payload;
-    //console.log(`The event payload: ${JSON.stringify(payload, null, 2)}`);
-    console.log(`repo info: ${JSON.stringify(payload.repository, null, 2)}`);
+    console.log(`context: ${JSON.stringify(context, null, 2)}`);
+    //console.log(`repo info: ${JSON.stringify(payload.repository, null, 2)}`);
 
     //octokit.paginate(
     const issues = await octokit.issues.listForRepo({
       state: 'open',
-      owner:  github.context.payload.repository.owner.login,
-      repo:   github.context.payload.repository.full_name,
+      owner:  context.repo.owner,
+      repo:   context.repo.repo,
     });  
     console.log(`issues: ${JSON.stringify(issues, null, 2)}`);
-
     //core.setOutput("time", time);
   } catch (error) {
     core.setFailed(error.message);
