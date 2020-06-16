@@ -5767,22 +5767,29 @@ const parse = issueParser('github', { actions: { blocks: ['blocks'] }});
 const repoToken = core.getInput('repo-token');
 const octokit = github.getOctokit(repoToken);
 
-
-async function run() {
-  try {
-    // Get the JSON webhook payload for the event that triggered the workflow
-    const payload = github.context.payload;
-    console.log(`context: ${JSON.stringify(context, null, 2)}`);
-    //console.log(`repo info: ${JSON.stringify(payload.repository, null, 2)}`);
-
-    //octokit.paginate(
-    const issues = await octokit.issues.listForRepo({
+async function getAllIssues() {
+  return await octokit.paginate(
+    octokit.issues.listForRepo, {
       state: 'open',
       owner:  context.repo.owner,
       repo:   context.repo.repo,
-    });  
-    console.log(`issues: ${JSON.stringify(issues, null, 2)}`);
+    });
+}
+
+async function run() {
+  try {
+    const allIssues = await getAllIssues();
+    const blockers = allIssues.filter((issue) => { //filter out self
+      //console.log(`issuedata: ${JSON.stringify(issue, null, 2)}`);
+      return issue.number !== context.payload.issue.number;
+    }).filter((issue) => {
+      const parsedBody = parse(issue.data.body);
+      console.log(`parsed body: ${JSON.stringify(body, null, 2)}`);
+      return true;
+    }); 
+    console.log(`blockers: ${JSON.stringify(blockers, null, 2)}`);
     //core.setOutput("time", time);
+
   } catch (error) {
     core.setFailed(error.message);
   }
