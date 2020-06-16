@@ -5783,8 +5783,9 @@ async function run() {
       //console.log(`issuedata: ${JSON.stringify(issue, null, 2)}`);
       return issue.number !== context.payload.issue.number;
     }).filter((issue) => {
-      const parsedBody = parse(issue.data.body);
-      console.log(`parsed body: ${JSON.stringify(body, null, 2)}`);
+      console.log(`issue: ${JSON.stringify(issue, null, 2)}`);
+      const parsedBody = parse(issue.body);
+      console.log(`parsed body: ${JSON.stringify(parsedBody, null, 2)}`);
       return true;
     }); 
     console.log(`blockers: ${JSON.stringify(blockers, null, 2)}`);
