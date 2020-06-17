@@ -36,15 +36,20 @@ async function run() {
     }); 
     //console.log(`blockers: ${JSON.stringify(blockers, null, 2)}`);
     if(blockers.length > 0) {
+      const blocker_str = blockers.map((blocker) => { return `#${blocker.number}` })
       octokit.issues.update({
         owner:  context.repo.owner,
         repo:   context.repo.repo,
         issue_number:  thisId,
         state: 'open',
       });
-      core.setOutput('blocking_issues',
-        blockers.map((blocker) => { return `#${blocker.number}` })
-      );
+      octokit.issues.createComment({
+        owner:  context.repo.owner,
+        repo:   context.repo.repo,
+        issue_number:  thisId,
+        body: `This issue cannot be closed at this time, it is dependent on the following issue(s): ${blocker_str}`,
+      });
+      core.setOutput('blocking_issues', blocker_str);
     } else { 
       core.setOutput('blocking_issues', 'No blocking issues, this issue is now permanently closed');
     }
