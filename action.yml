@@ -3,8 +3,11 @@ name: 'Hello World'
 description: 'Greet someone and record the time'
 inputs:
   repo-token:
-    description: Repository token needed
+    description: Repository token 
     required: true
+outputs:
+  blocking_issues:
+    description: List of issues this one is dependent on
 runs:
   using: 'node12'
   main: 'dist/index.js'
