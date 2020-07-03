@@ -2,24 +2,23 @@
 
 on the issue.closed event this action scans the issue description & the comments and if there is any reference to an issue that blocks this one, it will undo reopen the issue
 
-This action prints "Hello World" or "Hello" + the name of a person to greet to the log.
-
 ## Inputs
 
-### `who-to-greet`
+### `repo-token`
 
-**Required** The name of the person to greet. Default `"World"`.
+**Required** Github Repository Token.
 
 ## Outputs
+  blocking_issues: [ "#1", "2", "#3"]
 
-### `time`
+### `blocking_issues`
 
-The time we greeted you.
+List of issues this issue is dependent on
 
 ## Example usage
 
-uses: actions/gha_close_blockern@v1
+uses: autoissue/autoissuebot@v1
 with:
-  who-to-greet: 'Mona the Octocat'
+  repo-token: 'repository token'
 
 

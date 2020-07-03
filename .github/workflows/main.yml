@@ -16,7 +16,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Block Closing Dependent Issue
       uses: ./ # Uses an action in the root directory
-      id: gha_close_blocker 
+      id: autoissuebot
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
