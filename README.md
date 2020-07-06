@@ -1,6 +1,6 @@
-# Hello world javascript action
+# Issue Blocker Bot 
 
-on the issue.closed event this action scans the issue description & the comments and if there is any reference to an issue that blocks this one, it will undo reopen the issue
+This action runs on the issue.closed event and will scan all other issues and if it determines that an issue blocks this one, it will reopen it.
 
 ## Inputs
 
@@ -9,7 +9,7 @@ on the issue.closed event this action scans the issue description & the comments
 **Required** Github Repository Token.
 
 ## Outputs
-  blocking_issues: [ "#1", "2", "#3"]
+  blocking_issues: "#1, #2, #3"
 
 ### `blocking_issues`
 

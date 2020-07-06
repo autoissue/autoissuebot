@@ -1,6 +1,5 @@
-#Default fake action.yml
-name: 'Hello World'
-description: 'Greet someone and record the time'
+name: 'Auto Issue Bot'
+description: "Disallow closing of an issue if any of it's dependents are still open"
 inputs:
   repo-token:
     description: Repository token 

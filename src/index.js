@@ -31,7 +31,7 @@ function filterBlockers(allIssues, THIS_ID) {
     const blockedIssueNum = toInt(parsedBody.actions.blocks[0].issue);
     return parsedBody.actions.blocks && blockedIssueNum  === THIS_ID;
   };
-  console.log(`allIssues : ${JSON.stringify(allIssues, null, 2)}`);
+  //console.log(`allIssues : ${JSON.stringify(allIssues, null, 2)}`);
 
   return allIssues.filter(validBody).filter(notThisIssue).filter(allowedCollaboratorTypes).filter(onlyBlockers);
 }
@@ -51,11 +51,11 @@ async function getAllIssues() {
 async function run() {
   try {
     console.log(`THIS_ID: ${THIS_ID}`);
-    const allIssues = await getAllIssues()
-    const sorted = allIssues.sort((l, r) => l.number - r.number );
+    const all = await getAllIssues()
+    const sorted = all.sort((l, r) => l.number - r.number );
 
     //console.log(`allIssues: ${JSON.stringify(allIssues, null, 2)}`);
-    const blockers = filterBlockers(allIssues, THIS_ID);
+    const blockers = filterBlockers(sorted, THIS_ID);
     //console.log(`blockers: ${JSON.stringify(blockers, null, 2)}`);
     if(blockers.length == 0) {
       core.setOutput('blocking_issues', 'No blocking issues, this issue is now permanently closed');
