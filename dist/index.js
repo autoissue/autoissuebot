@@ -12835,8 +12835,8 @@ async function run() {
     core.setOutput('blocking_issues', commentBody);
   } catch (error) {
     core.setFailed(error.message);
+    console.log(`error: ${JSON.stringify(error, null, 2)}`);
   }
-
 }
 
 run();

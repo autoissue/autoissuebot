@@ -16,9 +16,9 @@ This action runs on the issue.closed event and will scan all other issues and if
 List of issues this issue is dependent on
 
 ## Example usage
-
+```
 uses: autoissue/autoissuebot@v1
 with:
   repo-token: 'repository token'
-
+```
 

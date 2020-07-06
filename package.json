@@ -1,12 +1,13 @@
 {
-  "name": "autoissuebot",
+  "name": "@autoissue/autoissuebot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "rel": "ncc build src/index.js"
   },
+  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
   "keywords": [],
   "author": "",
   "license": "ISC",

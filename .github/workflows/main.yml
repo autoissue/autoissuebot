@@ -1,10 +1,7 @@
-# unneeded comment
 name: Reopen closed issues
 on:
   issues:
-    types: [ open, closed, edited ] 
-  issue_comment:
-    types: [ created, edited ]
+    types: [ closed ] 
 jobs:
   maybe_reopen_issue:
     runs-on: ubuntu-latest
@@ -16,5 +13,3 @@ jobs:
       id: autoissuebot
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-
