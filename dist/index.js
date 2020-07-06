@@ -12755,20 +12755,42 @@ exports.paginateRest = paginateRest;
 
 const core = __webpack_require__(357);
 const github = __webpack_require__(955);
-const issueParser = __webpack_require__(866);
-
-
-
 const context = github.context;
-const parse = issueParser('github', { actions: { blocks: ['blocks'] }});
 const repoToken = core.getInput('repo-token');
 const octokit = github.getOctokit(repoToken);
-
-const thisId = context.payload.issue.number;
 
 if ( !repoToken) { 
   core.setFailed('repo-token was not set');
 }
+
+
+
+const issueParser = __webpack_require__(866);
+const parse = issueParser('github', { actions: { blocks: ['blocks'] }});
+
+
+
+function toInt(str) {
+  return parseInt(str, 10);
+}
+
+const THIS_ID = toInt(context.payload.issue.number);
+
+function filterBlockers(allIssues, THIS_ID) {
+  const validBody = (issue) => { return issue.body !== '' } 
+  const notThisIssue = (issue) => toInt(issue.number) !== THIS_ID;;
+  const allowedCollaboratorTypes = (issue) => ['COLLABORATOR', 'CONTRIBUTOR', 'MEMBER', 'OWNER' ].includes(issue.author_association);
+
+  const onlyBlockers = (issue) => {
+    const parsedBody = parse(issue.body.trim().toLowerCase());
+    const blockedIssueNum = toInt(parsedBody.actions.blocks[0].issue);
+    return parsedBody.actions.blocks && blockedIssueNum  === THIS_ID;
+  };
+  console.log(`allIssues : ${JSON.stringify(allIssues, null, 2)}`);
+
+  return allIssues.filter(validBody).filter(notThisIssue).filter(allowedCollaboratorTypes).filter(onlyBlockers);
+}
+
 
 async function getAllIssues() {
   return await octokit.paginate(
@@ -12779,40 +12801,38 @@ async function getAllIssues() {
     });
 }
 
+
+
 async function run() {
   try {
-    const allIssues = await getAllIssues();
-    console.log(`thisId: ${thisId}`);
-    console.log(`allIssues : ${JSON.stringify(allIssues, null, 2)}`);
-    const blockers = allIssues
-    //filter out self
-      .filter((issue) => { return issue.number !== thisId; })
-      .filter((issue) => {
-      console.log(`issue body: ${issue.body}`);
-      const parsedBody = parse(issue.body.toLowerCase());
-      console.log(`parsed body: ${JSON.stringify(parsedBody, null, 2)}`);
-      return parsedBody.actions.blocks && parsedBody.actions.blocks[0].issue !== thisId; 
-    }); 
-    console.log(`blockers: ${JSON.stringify(blockers, null, 2)}`);
+    console.log(`THIS_ID: ${THIS_ID}`);
+    const allIssues = await getAllIssues()
+    const sorted = allIssues.sort((l, r) => l.number - r.number );
+
+    //console.log(`allIssues: ${JSON.stringify(allIssues, null, 2)}`);
+    const blockers = filterBlockers(allIssues, THIS_ID);
+    //console.log(`blockers: ${JSON.stringify(blockers, null, 2)}`);
     if(blockers.length == 0) {
       core.setOutput('blocking_issues', 'No blocking issues, this issue is now permanently closed');
       return;
     }
 
-    const blocker_str = blockers.map((blocker) => { return `#${blocker.number}` })
+    const blocker_str = blockers.map((blocker) => { return `#${blocker.number}` }).join(' ');
+    const commentBody =`This issue cannot be closed at this time, it is dependent on the following issue(s): ${blocker_str}`;
+
     octokit.issues.update({
       owner:  context.repo.owner,
       repo:   context.repo.repo,
-      issue_number:  thisId,
+      issue_number:  THIS_ID,
       state: 'open',
     });
     octokit.issues.createComment({
       owner:  context.repo.owner,
       repo:   context.repo.repo,
-      issue_number:  thisId,
-      body: `This issue cannot be closed at this time, it is dependent on the following issue(s): ${blocker_str}`,
+      issue_number:  THIS_ID,
+      body: commentBody,
     });
-    core.setOutput('blocking_issues', blocker_str);
+    core.setOutput('blocking_issues', commentBody);
   } catch (error) {
     core.setFailed(error.message);
   }
