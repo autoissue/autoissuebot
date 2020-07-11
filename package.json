@@ -7,13 +7,16 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "rel": "ncc build src/index.js"
   },
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@actions/core": "^1.2.4",
     "@actions/github": "^3.0.0",
+    "all-settled": "^1.0.0",
     "github-client": "^0.8.0",
     "issue-parser": "^6.0.0"
   }

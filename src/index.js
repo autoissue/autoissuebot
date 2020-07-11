@@ -10,7 +10,8 @@ if ( !repoToken) {
 
 
 
-const issueParser = require('issue-parser');
+
+
 const parse = issueParser('github', { actions: { blocks: ['blocks'] }});
 
 
@@ -53,6 +54,21 @@ async function run() {
     console.log(`THIS_ID: ${THIS_ID}`);
     const all = await getAllIssues()
     const sorted = all.sort((l, r) => l.number - r.number );
+
+    
+    const requestOptions = {
+      state: 'open',
+      owner:  context.repo.owner,
+      repo:   context.repo.repo,
+    };
+    var blockers = [];
+    for await (const response of octokit.paginate.iterator(octokit.issues.listForRepo, requestOptions)) {
+      // do whatever you want with each response, break out of the loop, etc.
+      //response.data.issues ? 
+      //
+    }
+
+
 
     //console.log(`allIssues: ${JSON.stringify(allIssues, null, 2)}`);
     const blockers = filterBlockers(sorted, THIS_ID);
