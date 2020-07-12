@@ -1,3 +1,5 @@
+const issueParser = require('issue-parser'); 
+const parse = issueParser('github', { actions: { blocks: ['blocks'] }});
 const core = require('@actions/core');
 const github = require('@actions/github');
 const context = github.context;
@@ -6,13 +8,8 @@ const octokit = github.getOctokit(repoToken);
 
 if ( !repoToken) { 
   core.setFailed('repo-token was not set');
+  process.exit(1);
 }
-
-
-
-
-
-const parse = issueParser('github', { actions: { blocks: ['blocks'] }});
 
 
 
@@ -28,9 +25,9 @@ function filterBlockers(allIssues, THIS_ID) {
   const allowedCollaboratorTypes = (issue) => ['COLLABORATOR', 'CONTRIBUTOR', 'MEMBER', 'OWNER' ].includes(issue.author_association);
 
   const onlyBlockers = (issue) => {
-    const parsedBody = parse(issue.body.trim().toLowerCase());
-    const blockedIssueNum = toInt(parsedBody.actions.blocks[0].issue);
-    return parsedBody.actions.blocks && blockedIssueNum  === THIS_ID;
+    const pBody = parse(issue.body.trim().toLowerCase());
+    const blockedIssueNum = toInt(pBody.actions.blocks[0].issue);
+    return pBody.actions.blocks && blockedIssueNum  === THIS_ID;
   };
   //console.log(`allIssues : ${JSON.stringify(allIssues, null, 2)}`);
 
@@ -61,8 +58,8 @@ function postComment(blockers) {
 async function run() {
   try {
     console.log(`THIS_ID: ${THIS_ID}`);
-    const all = await getAllIssues();
-    const sorted = all.sort((l, r) => l.number - r.number );
+    // const all = await getAllIssues();
+    // const sorted = all.sort((l, r) => l.number - r.number );
 
     const parameters = {
       state: 'open',
