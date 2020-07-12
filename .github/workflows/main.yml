@@ -1,7 +1,9 @@
 name: Reopen closed issues
 on:
   issues:
-    types: [ closed ] 
+    types: [ closed ]
+  issue_comment:
+    types: [ created, edited ] # only for debug purposes!
 jobs:
   maybe_reopen_issue:
     runs-on: ubuntu-latest
