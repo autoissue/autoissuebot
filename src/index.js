@@ -37,47 +37,7 @@ function filterBlockers(allIssues, THIS_ID) {
   return allIssues.filter(validBody).filter(notThisIssue).filter(allowedCollaboratorTypes).filter(onlyBlockers);
 }
 
-
-async function getAllIssues() {
-  return await octokit.paginate(
-    octokit.issues.listForRepo, {
-      state: 'open',
-      owner:  context.repo.owner,
-      repo:   context.repo.repo,
-    });
-}
-
-
-
-async function run() {
-  try {
-    console.log(`THIS_ID: ${THIS_ID}`);
-    const all = await getAllIssues()
-    const sorted = all.sort((l, r) => l.number - r.number );
-
-    
-    const requestOptions = {
-      state: 'open',
-      owner:  context.repo.owner,
-      repo:   context.repo.repo,
-    };
-    var blockers = [];
-    for await (const response of octokit.paginate.iterator(octokit.issues.listForRepo, requestOptions)) {
-      // do whatever you want with each response, break out of the loop, etc.
-      //response.data.issues ? 
-      //
-    }
-
-
-
-    //console.log(`allIssues: ${JSON.stringify(allIssues, null, 2)}`);
-    const blockers = filterBlockers(sorted, THIS_ID);
-    //console.log(`blockers: ${JSON.stringify(blockers, null, 2)}`);
-    if(blockers.length == 0) {
-      core.setOutput('blocking_issues', 'No blocking issues, this issue is now permanently closed');
-      return;
-    }
-
+function postComment(blockers) {
     const blocker_str = blockers.map((blocker) => { return `#${blocker.number}` }).join(' ');
     const commentBody =`This issue cannot be closed at this time, it is dependent on the following issue(s): ${blocker_str}`;
 
@@ -93,7 +53,43 @@ async function run() {
       issue_number:  THIS_ID,
       body: commentBody,
     });
+  return commentBody;
+}
+
+
+
+async function run() {
+  try {
+    console.log(`THIS_ID: ${THIS_ID}`);
+    const all = await getAllIssues();
+    const sorted = all.sort((l, r) => l.number - r.number );
+
+    const parameters = {
+      state: 'open',
+      owner:  context.repo.owner,
+      repo:   context.repo.repo,
+      //default: per_page: 30,
+      per_page: 1, //for debug only
+    };
+    var blockers = [];
+    for await (const response of octokit.paginate.iterator(octokit.issues.listForRepo, parameters)) {
+      // do whatever you want with each response, break out of the loop, etc.
+      //response.data.issues ? 
+      console.log(`listForRepo response: ${JSON.stringify(response, null, 2)}`);
+      //TODO:: filters & add to blockers
+      //console.log(`allIssues: ${JSON.stringify(allIssues, null, 2)}`);
+      //const blockers = filterBlockers(sorted, THIS_ID);
+      //console.log(`blockers: ${JSON.stringify(blockers, null, 2)}`);
+    }
+
+    if(blockers.length == 0) {
+      core.setOutput('blocking_issues', 'No blocking issues, this issue is now permanently closed');
+      return;
+    }
+    
+    const commentBody = postComment(blockers);
     core.setOutput('blocking_issues', commentBody);
+
   } catch (error) {
     core.setFailed(error.message);
     console.log(`error: ${JSON.stringify(error, null, 2)}`);
