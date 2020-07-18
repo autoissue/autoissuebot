@@ -1,5 +1,6 @@
 name: 'Auto Issue Bot'
 description: "Disallow closing of an issue if any of it's dependents are still open"
+author: "Vat Raghavan <machinshin@gmail.com>"
 inputs:
   repo-token:
     description: Repository token 

@@ -1,7 +1,8 @@
-const issueParser = require('issue-parser'); 
+import * as core from '@actions/core'
+import issueParser = require('issue-parser');
+import github = require('@actions/github');
+
 const parse = issueParser('github', { actions: { blocks: ['blocks'] }});
-const core = require('@actions/core');
-const github = require('@actions/github');
 const context = github.context;
 const repoToken = core.getInput('repo-token');
 const octokit = github.getOctokit(repoToken);
@@ -10,26 +11,39 @@ const octokit = github.getOctokit(repoToken);
 
 
 
-function array_flatten(arr) {
-  return arr.reduce(function (flat, toFlatten) {
-    return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
-  }, []);
+function toInt(str: string) {
+  return parseInt(str, 10);
+}
+
+
+
+
+//GIVEN: issue.body = "blocks #7. blocks #3", THIS_ID = 7
+//THEN method returns [7], meaning the specified issue does have a blocker on
+//THIS_ID
+//GIVEN issue.body = "blocks #3, blocks #5", THIS_ID = 7
+//THIS returns [], as none of the blockers in `issue` are THIS_ID
+
+function issue_blockers_not_this(issue_body: string, this_id: number) {
+  const parsed = parse(issue_body);
+  return parsed.actions.blocks.map((bl: any) => toInt(bl.issue)).filter((issue_num: number) => issue_num === this_id);
 }
 
 
 
 
 
-function applyFilters(issues, THIS_ID) {
-  const hasValidBody = (issue) => { return issue.body !== '' } 
-  const isNotThisIssues = (issue) => toInt(issue.number) !== THIS_ID;;
-  const hasAllowedCollaboratorTypes = (issue) => ['COLLABORATOR', 'CONTRIBUTOR', 'MEMBER', 'OWNER' ].includes(issue.author_association);
+function applyFilters(issues: any, THIS_ID: number) {
+  const hasValidBody = (issue:any ) => { return issue.body !== '' } 
+  const isNotThisIssues = (issue:any ) => toInt(issue.number) !== THIS_ID;;
+  const hasAllowedCollaboratorTypes = (issue:any ) => ['COLLABORATOR', 'CONTRIBUTOR', 'MEMBER', 'OWNER' ].includes(issue.author_association);
 
-  const filterInBlockers = (issue) => {
+  const filterInBlockers = (issue:any ) => {
     const pBody = parse(issue.body.trim().toLowerCase());
+    pBody.actions.blocks[0].issue = toInt(pBody.actions.blocks[0].issue);
     console.log(`issue: ${JSON.stringify(issue, null, 2)}`);
     console.log(`pBody: ${JSON.stringify(pBody, null, 2)}`);
-    const blockedIssueNum = toInt(pBody.actions.blocks[0].issue);
+    const blockedIssues =  pBody.actions.blocks.map((bl: any) => toInt(bl.issue)).filter(THIS_ID);
     return pBody.actions.blocks && blockedIssueNum  === THIS_ID;
   };
   //console.log(`issues : ${JSON.stringify(issues, null, 2)}`);
@@ -42,8 +56,8 @@ function applyFilters(issues, THIS_ID) {
 
 
 
-function postComment(context, blockers) {
-  const blocker_str = blockers.map((blocker) => { return `#${blocker.number}` }).join(' ');
+function postComment(context: any, blockers: any) {
+  const blocker_str = blockers.map((blocker: any) => { return `#${blocker.number}` }).join(' ');
   const comment =`This issue cannot be closed at this time, it is dependent on the following issue(s): ${blocker_str}`;
 
   octokit.issues.update({
@@ -81,15 +95,11 @@ function getNextPage (context) {
 
 
 
-function toInt(str) {
-  return parseInt(str, 10);
-}
 
 
 
 
-
-async function run() {
+async function run(): Promise<void> {
   try {
     if ( !repoToken) { 
       core.setFailed('repo-token was not set');
