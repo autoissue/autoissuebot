@@ -18,6 +18,7 @@
     "@actions/github": "^3.0.0",
     "all-settled": "^1.0.0",
     "github-client": "^0.8.0",
-    "issue-parser": "^6.0.0"
+    "issue-parser": "^6.0.0",
+    "lodash": "^4.17.19"
   }
 }

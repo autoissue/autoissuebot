@@ -1,4 +1,4 @@
-const responses = require('./tests/responses.json');
+const responses = require('./responses.json');
 
 const _ = require('lodash');
 const issueParser = require('issue-parser'); 
@@ -11,22 +11,10 @@ response2 = responses[2]
 
 
 validate = require('./src/validate');
-var allBlockers = [];
-//[9] blocks 7
+
 b0 = validate(response0, THIS_ID)
-//[8] blocks 7
 b1 = validate(response1, THIS_ID)
-// []
 b2 = validate(response2, THIS_ID)
-allBlockers.concat(b0, b1, b2);
-/*
- * SCENARIOS:
- * THIS_ID = 7
- * 'blocks #7'
- * 'blocks #2'
- * 'blocks #2, blocks #5'
- * 'blocks #2, blocks #7'
-**/
 
 
 blockingBody = { body: 'blocks #7'}
