@@ -74,10 +74,10 @@ function validate(response, THIS_ID) {
 
   const doesBlockThisIssue = ((issue) => {
     //step 4 
-    console.log(`issue: ${jsLog(issue)}`);
+    // console.log(`issue: ${jsLog(issue)}`);
     const blockers = issue.body.actions.blocks;
     return blockers.reduce((arr, curr) => {
-      console.log(`THIS: ${THIS_ID} | block-curr :${jsLog(curr)}`) 
+      // console.log(`THIS: ${THIS_ID} | block-curr :${jsLog(curr)}`)
       return (toInt(curr.issue) === THIS_ID) ? arr.concat(curr) : arr
     }, []);
   });

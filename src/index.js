@@ -6,7 +6,7 @@ const octokit = github.getOctokit(repoToken);
 const validate = require('./validate');
 
 const THIS_ID = parseInt(context.payload.issue.number, 10);
-console.log(`THIS_ID: ${THIS_ID}`);
+// console.log(`THIS_ID: ${THIS_ID}`);
 
 
 
@@ -41,7 +41,7 @@ function getNextPage (context) {
     owner:  context.repo.owner,
     repo:   context.repo.repo,
     //default: per_page: 30,
-    per_page: 1, //for debug only
+    //per_page: 1, //for debug only
   };
   return octokit.paginate.iterator(octokit.issues.listForRepo, parameters);
 }
@@ -61,11 +61,9 @@ async function run() {
     var allBlockers = Array();
     for await (const response of getNextPage(context)) {
       const blockers = validate(response, THIS_ID);
-      console.log(`run-blockers: ${jsLog(blockers)}`);
       allBlockers = allBlockers.concat(blockers); 
     }
 
-    console.log(`all blockers: ${jsLog(allBlockers)}`);
     if(allBlockers.length) {
       allBlockers.sort((l, r) => l.number - r.number );
       const comment = postComment(context, allBlockers);
@@ -73,7 +71,7 @@ async function run() {
       return;
     }
     core.setOutput('blocking_issues', 'No blocking issues, this issue is now permanently closed');
-    console.log('No blocking issues, this issue is now permanently closed');
+    // console.log('No blocking issues, this issue is now permanently closed');
   } catch (error) {
     core.setFailed(error.message);
     console.log(`error: ${jsLog(error)}`);
