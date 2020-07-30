@@ -2,10 +2,10 @@ name: Reopen closed issues
 on:
   issues:
     types: [ closed ]
-  issue_comment:
-    types: [ created, edited ] # only for debug purposes!
+   #issue_comment:
+     #types: [ created, edited ] # only for debug purposes!
 jobs:
-  maybe_reopen_issue:
+  reopen_dependent_issue:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout

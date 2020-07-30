@@ -1,13 +1,17 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const context = github.context;
-const repoToken = core.getInput('repo-token');
 const octokit = github.getOctokit(repoToken);
 const validate = require('./validate');
 
-const THIS_ID = parseInt(context.payload.issue.number, 10);
-// console.log(`THIS_ID: ${THIS_ID}`);
 
+
+
+const repoToken = core.getInput('repo-token');
+const perPage = parseInt(core.getInput('per-page'));
+const THIS_ID = parseInt(context.payload.issue.number, 10);
+const outputKey = 'blockers';
+// console.log(`THIS_ID: ${THIS_ID}`);
 
 
 
@@ -34,17 +38,16 @@ function postComment(context, blockers) {
 
 
 
-
 function getNextPage (context) {
   const parameters = {
     state: 'open',
     owner:  context.repo.owner,
     repo:   context.repo.repo,
-    //default: per_page: 30,
-    //per_page: 1, //for debug only
+    per_page: perPage, 
   };
   return octokit.paginate.iterator(octokit.issues.listForRepo, parameters);
 }
+
 
 
 
@@ -67,10 +70,10 @@ async function run() {
     if(allBlockers.length) {
       allBlockers.sort((l, r) => l.number - r.number );
       const comment = postComment(context, allBlockers);
-      core.setOutput('blocking_issues', comment);
+      core.setOutput(outputKey, comment);
       return;
     }
-    core.setOutput('blocking_issues', 'No blocking issues, this issue is now permanently closed');
+    core.setOutput(outputKey, 'No blocking issues, this issue is now permanently closed');
     // console.log('No blocking issues, this issue is now permanently closed');
   } catch (error) {
     core.setFailed(error.message);
