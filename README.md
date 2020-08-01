@@ -1,6 +1,6 @@
 # Blocker Bot 
 
-This action runs on the issue.closed event and scans the repository for any issues that need to be finished/closed before closing the issue.
+This action runs on the `issue.closed` event and scans the repository for any issues that need to be finished/closed before closing the issue.
 
 
 
@@ -13,6 +13,7 @@ This action runs on the issue.closed event and scans the repository for any issu
 > You:  Have dozens, perhaps hundreds of issues in your backlog, and have a hard time managing that.
 
 <br/>
+
 How you know, when deciding to close #217 that it's a bad idea because #175, and #173 aren't finished yet?
 
 That's where this action enters the picture!
@@ -32,10 +33,10 @@ Then if those matching issues are found it will reopen #217 and add a comment th
 ### `per-page`
 
 <span style="color:blue">**NOT Required**</span> Configure the # of issues per page when making requests to github
-  
+```
   Default: 30
-  
   Max: 100
+```
 
 ## Outputs
 
