@@ -4,12 +4,12 @@ inputs:
   repo-token:
     description: Repository token 
     required: true
-  per_page:
+  per-page:
     description:  [Number] Overrides the github request default.
     required: false
     default: "30"
 outputs:
-  blocking_issues:
+  blockers:
     description: List of issues this one is dependent on
 runs:
   using: "node12"
