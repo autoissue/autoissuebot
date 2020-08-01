@@ -5,28 +5,37 @@ This action runs on the issue.closed event and scans the repository for any issu
 
 ## Use Case:
 
-> Be you: work with a team to write code for some software product and your team uses Github Issues for managing the development process.
-> Be you: Have dozens, perhaps hundreds of issues in your backlog, and have a hard time managing that.
 
-In this scenario how do you know how issue #217 is related to issue #175 and whether you should close #217?
-Add this action to your repository, so when you close issue #217, we can scan the description of all open issues in the repository for the text "blocks #217"
-Then if any matching issues are found we will reopen #217 and add a comment saying "This issue cannot be closed at this time, it is dependent on issue #175, #173". 
+> Be you: Work with a team to write code for some software product and your team uses Github Issues for managing the development process.
+> Be you:  Have dozens, perhaps hundreds of issues in your backlog, and have a hard time managing that.
 
+
+<p>
+How you know, when deciding to close #217 that it's a bad idea because #175, and #173 aren't finished yet?
+That's where this action enters the picture!
+Add it to your repository, so when you close issue #217, it can scan the description of all open issues in the repository for the text "blocks #217"<br>
+Then if those matching issues are found it will reopen #217 and add a comment that says <br>
+</p>
+
+
+> "This issue cannot be closed at this time, it is dependent on issue #175, #173"
+
+# Inputs
 
 ### `repo-token`
 
-**Required** Github Repository Token.
+<span style="color:red">**REQUIRED**</span> Github Repository Token.
 
 ### `per-page`
 
-**Not Required** Configure the # of issues per page when making requests to github
+<span style="color:blue">**NOT Required**</span> Configure the # of issues per page when making requests to github
   Default: 30
   Max: 100
 
 ## Outputs
 ### `blockers`
   List of issues this issue is dependent on
-  blockers: "#1, #2, #3"
+  blockers: "#175, #173"
 
 ### Adds a comment to the re-opened issue
    ![Screenshot](/images/screenshot.png)
