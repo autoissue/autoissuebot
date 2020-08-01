@@ -8,9 +8,9 @@ This action runs on the `issue.closed` event and scans the repository for any is
 
 ## Use Case:
 
-> Be you: Work with a team to write code for some software product and your team uses Github Issues for managing the development process.
+> You: Work with a team to write code for some software product and your team uses Github Issues for managing the development process.
 >
-> Be you:  Have dozens, perhaps hundreds of issues in your backlog, and have a hard time managing that.
+> You:  Have dozens, perhaps hundreds of issues in your backlog, and have a hard time managing that.
 
 <br/>
 
@@ -42,9 +42,10 @@ Then if those matching issues are found it will reopen #217 and add a comment th
 
 ### `blockers`
   List of issues this issue is dependent on
+  
   blockers: "#175, #173"
 
-### Adds a comment to the re-opened issue
+### Add a comment to the re-opened issue
    ![Screenshot](/images/screenshot.png)
 
 ## Example Basic usage
