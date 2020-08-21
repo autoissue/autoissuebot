@@ -1,14 +1,17 @@
 const issueParser = require('issue-parser'); 
 const parse = issueParser('github', { actions: { blocks: ['blocks'] }});
 const _ = require('lodash');
+const core = require('@actions/core');
 
 
 
 
-
+const DEBUG = core.isDebug();
+const debug = core.debug;
 
 const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
 const toInt = (str) => { return parseInt(str, 10)}
+
 
 
 
@@ -31,10 +34,11 @@ function PreFilteredIssues(issues, THIS_ID) {
     }))
 }
 
+
+
+
 //TODO: after moving to typescript, use Pick<T,K> instead
 // or maybe json -> typescript:interface?
-
-
 //STEP 1.
 function ResponseData(response) {
   return response.data.map((issue) => {
@@ -74,10 +78,16 @@ function validate(response, THIS_ID) {
 
   const doesBlockThisIssue = ((issue) => {
     //step 4 
-    // console.log(`issue: ${jsLog(issue)}`);
+    if (DEBUG) { 
+      console.log(`issue: ${jsLog(issue)}`);
+      debug(`debug|issue: ${jsLog(issue)}`);
+    }
     const blockers = issue.body.actions.blocks;
     return blockers.reduce((arr, curr) => {
-      // console.log(`THIS: ${THIS_ID} | block-curr :${jsLog(curr)}`)
+      if (DEBUG) { 
+        console.log(`THIS: ${THIS_ID} | block-curr :${jsLog(curr)}`)
+        debug(`THIS: ${THIS_ID} | block-curr :${jsLog(curr)}`);
+      }
       return (toInt(curr.issue) === THIS_ID) ? arr.concat(curr) : arr
     }, []);
   });

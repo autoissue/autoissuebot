@@ -10,17 +10,17 @@ This action runs on the `issue.closed` event and scans the repository for any is
 
 > You: Work with a team to write code for some software product and your team uses Github Issues for managing the development process.
 >
-> You:  Have dozens, perhaps hundreds of issues in your backlog, and have a hard time managing that.
+> You:  Have dozens, perhaps hundreds of issues in your backlog, and you're having a hard time managing that.
 
 <br/>
 
-How you know, when deciding to close #217 that it's a bad idea because #175, and #173 aren't finished yet?
+For example: How do you know, when going through your tickets that it's a bad idea to close #217 because blockers #175 & #173 aren't finished yet?
 
-That's where this action enters the picture!
+That is where **autoissuebot** enters the picture!
 
-Add it to your repository, so when you close issue #217, it can scan the description of all open issues in the repository for the text "blocks #217"
+Add it to your repositorys' actions, then, when you close issue #217, it will scan the body of all open issues in the repository for the text "blocks #217"
 
-Then if those matching issues are found it will reopen #217 and add a comment that says
+Then if those matching issues are found it will reopen #217 and add a comment that says:
 
 > "This issue cannot be closed at this time, it is dependent on issue #175, #173"
 

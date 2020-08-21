@@ -1,19 +1,19 @@
-name: "Auto Issue Bot"
-description: "Reopen dependent issue on close"
+name: 'Auto Issue Bot'
+description: 'Reopen dependent issue on close'
 inputs:
   repo-token:
-    description: Repository token 
+    description: 'Repository token' 
     required: true
   per-page:
-    description:  [Number] Overrides the github request default.
+    description:  '[Number] Overrides the github request default.'
     required: false
-    default: "30"
+    default: '30'
 outputs:
   blockers:
-    description: List of issues this one is dependent on
+    description: 'List of issues this one is dependent on'
 runs:
-  using: "node12"
-  main: "dist/index.js"
+  using: 'node12'
+  main: 'dist/index.js'
 branding:
-  color: "yellow"
-  icon:  "lock"
+  color: 'yellow'
+  icon:  'lock'

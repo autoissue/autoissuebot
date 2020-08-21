@@ -12,4 +12,5 @@ if issue-C is 'blocked by' issue-B then issue C cannot be closed if issue-B is s
 ## V2
 - [ ]  Able to scan issue comments for 'blocked by {issue}'   
 
-
+#Notes:
+  https://github.com/actions/toolkit/blob/main/docs/action-debugging.md#step-debug-logs
