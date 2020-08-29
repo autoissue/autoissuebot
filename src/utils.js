@@ -1,9 +1,8 @@
 const issueParser = require('issue-parser'); 
-const parse = issueParser('github', { actions: { blocks: ['blocks'] }});
+const parse = issueParser('github', { actions: { blocks: ['blocks'] , blockers: [ 'blocked by' ] } });
 const _ = require('lodash');
 const core = require('@actions/core');
-
-
+const allSettled = require('promise.allsettled');
 
 
 const DEBUG = core.isDebug();
@@ -74,7 +73,7 @@ function ResponseData(response) {
  * 3. Run issue body through issue-parser
  * 4. filter out issues where issue.body.blockers !== THIS_ID 
 **/
-function validate(response, THIS_ID) {
+function validate_blocks(response, THIS_ID) {
 
   const doesBlockThisIssue = ((issue) => {
     //step 4 
@@ -95,5 +94,8 @@ function validate(response, THIS_ID) {
   return issues.filter(doesBlockThisIssue);
 }
 
-module.exports = validate; 
+
+
+module.exports = { blocker_matches, validate_blocked_by, validate_blocks, blocked_by }; 
+
 

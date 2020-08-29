@@ -1,3 +1,4 @@
+/*
 const responses = require('./responses.json');
 
 const _ = require('lodash');
@@ -10,7 +11,7 @@ response1 = responses[1]
 response2 = responses[2]
 
 
-validate = require('./src/validate');
+validate = require('../src/validate');
 
 var allBlockers = [];
 //[9] blocks 7
@@ -30,7 +31,7 @@ allBlockers.concat()
 **/
 
 
-blockingBody = { body: 'blocks #7'}
+/*blockingBody = { body: 'blocks #7'}
 noBlock  = { body: 'blocks #2'}
 multiBody  = { body: 'blocks #5, blocks #6'}
 multiBodyBlocking  = { body: 'blocks #3, blocks #7'}
@@ -41,7 +42,7 @@ mb = xParse(multiBody.body, THIS_ID);
 mbb = xParse(multiBodyBlocking.body, THIS_ID);
 nb = xParse(noBlock.body, THIS_ID);
 
-
+*/
 
 
 

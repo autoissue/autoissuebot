@@ -4,13 +4,15 @@ const context = github.context;
 const DEBUG = core.isDebug();
 const debug = core.debug;
 const repoToken = core.getInput('repo-token');
+const perPage = parseInt(core.getInput('per-page'));
+const mode = core.getInput('mode');
+
+
 
 if (!repoToken) { 
   core.setFailed('repo-token was not set');
   process.exit(-1);
 }
-
-
 
 
 
@@ -25,8 +27,7 @@ debug(`THIS_ID: ${THIS_ID}`);
 
 
 const octokit = github.getOctokit(repoToken);
-const perPage = parseInt(core.getInput('per-page'));
-const validate = require('./validate');
+const { validate_blocks, validate_blocked_by, blocked_by_issues } = require('./utils');
 
 
 
@@ -67,11 +68,47 @@ function getNextPage (context) {
 
 
 
-async function run() {
+
+
+async function run_blocked_by(context) {
+  try {
+    const blockers = blocked_by_issues(ocotokit, {
+      owner:  context.repo.owner,
+      repo: context.repo.repo,
+      issue_number: THIS_ID,
+    });
+
+    ;
+    for await (const reponse of getNextPage(context)) {
+      const blockers = validate(response, THIS_ID);
+      allBlockers = allBlockers.concat(blockers); 
+    }
+    if(allBlockers.length) {
+      allBlockers.sort((l, r) => l.number - r.number );
+      const comment = postComment(context, allBlockers);
+      core.setOutput(outputKey, comment);
+      return;
+    }
+    if (DEBUG) {
+      debug('No blocking issues, this issue is now permanently closed');
+    }
+    core.setOutput(outputKey, 'No blocking issues, this issue is now permanently closed');
+  } catch (error) {
+    if (DEBUG) {
+      debug(`error: ${jsLog(error)}`);
+      console.log(`log:error: ${jsLog(error)}`)
+    }
+    core.setFailed(error.message);
+    process.exit(-1);
+  }
+}
+
+
+async function run_blocks() {
   try {
     var allBlockers = Array();
     for await (const response of getNextPage(context)) {
-      const blockers = validate(response, THIS_ID);
+      const blockers = validate_blocks(response, THIS_ID);
       allBlockers = allBlockers.concat(blockers); 
     }
 
@@ -95,4 +132,8 @@ async function run() {
   }
 }
 
-run();
+if (mode === 'blocked by') {
+  run_blocked_by();
+} else {
+  run_blocks();
+}
