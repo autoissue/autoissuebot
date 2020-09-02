@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const context = github.context;
-const DEBUG = core.isDebug();
+const DEBUG = true; //core.isDebug();
 const debug = core.debug;
 const repoToken = core.getInput('repo-token');
 
@@ -20,7 +20,7 @@ const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
 const THIS_ID = parseInt(context.payload.issue.number, 10);
 debug(`THIS_ID: ${THIS_ID}`);
 
-
+console.log(`github object: ${jsLog(github)}`)
 
 
 
@@ -95,4 +95,14 @@ async function run() {
   }
 }
 
-run();
+//run();
+
+  /*
+function getIssue(octokit, { repo { owner, repo }, ...rest } = context) {
+
+
+
+}
+
+
+*/

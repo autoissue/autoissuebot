@@ -6,7 +6,7 @@ const core = require('@actions/core');
 
 
 
-const DEBUG = core.isDebug();
+const DEBUG = true; //core.isDebug();
 const debug = core.debug;
 
 const jsLog = (obj) => (JSON.stringify(obj, null, 2) );

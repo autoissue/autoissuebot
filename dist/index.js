@@ -12756,7 +12756,7 @@ exports.paginateRest = paginateRest;
 const core = __webpack_require__(357);
 const github = __webpack_require__(955);
 const context = github.context;
-const DEBUG = core.isDebug();
+const DEBUG = true; //core.isDebug();
 const debug = core.debug;
 const repoToken = core.getInput('repo-token');
 
@@ -12775,7 +12775,7 @@ const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
 const THIS_ID = parseInt(context.payload.issue.number, 10);
 debug(`THIS_ID: ${THIS_ID}`);
 
-
+console.log(`github object: ${jsLog(github)}`)
 
 
 
@@ -12850,7 +12850,17 @@ async function run() {
   }
 }
 
-run();
+//run();
+
+  /*
+function getIssue(octokit, { repo { owner, repo }, ...rest } = context) {
+
+
+
+}
+
+
+*/
 
 
 /***/ }),
@@ -13082,7 +13092,7 @@ const core = __webpack_require__(357);
 
 
 
-const DEBUG = core.isDebug();
+const DEBUG = true; //core.isDebug();
 const debug = core.debug;
 
 const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
