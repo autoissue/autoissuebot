@@ -1,5 +1,5 @@
 const issueParser = require('issue-parser'); 
-const parse = issueParser('github', { actions: { blocks: ['blocks'] }});
+const parse = issueParser('github', { actions: { blocks: ['blocks'], blocked: [ 'blocked by' ] }});
 const _ = require('lodash');
 const core = require('@actions/core');
 

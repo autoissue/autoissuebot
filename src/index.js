@@ -4,6 +4,10 @@ const context = github.context;
 const DEBUG = true; //core.isDebug();
 const debug = core.debug;
 const repoToken = core.getInput('repo-token');
+const octokit = github.getOctokit(repoToken);
+const perPage = parseInt(core.getInput('per-page'));
+const mode = core.getInput('mode');
+
 
 if (!repoToken) { 
   core.setFailed('repo-token was not set');
@@ -12,49 +16,18 @@ if (!repoToken) {
 
 
 
-
-
+const bodyParser = require('./bodyParser');
+const gh = require('./ghIssueService');
+const validate = require('./validate');
 const outputKey = 'blockers';
 const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
 
-const THIS_ID = parseInt(context.payload.issue.number, 10);
-debug(`THIS_ID: ${THIS_ID}`);
-
-console.log(`github object: ${jsLog(github)}`)
+const THIS_ISSUE = parseInt(context.payload.issue.number, 10);
+debug(`THIS_ISSUE: ${THIS_ISSUE}`);
 
 
 
-const octokit = github.getOctokit(repoToken);
-const perPage = parseInt(core.getInput('per-page'));
-const validate = require('./validate');
-
-
-
-
-function postComment(context, blockers) {
-  if (DEBUG) { debug(`postComment: ${blockers}`)}
-  const blocker_str = blockers.map((blocker) => { return `#${blocker.number}` }).join(' ');
-  const comment =`This issue cannot be closed at this time, it is dependent on the following issue(s): ${blocker_str}`;
-
-  octokit.issues.update({
-    owner:  context.repo.owner,
-    repo:   context.repo.repo,
-    issue_number:  THIS_ID,
-    state: 'open',
-  });
-  octokit.issues.createComment({
-    owner:  context.repo.owner,
-    repo:   context.repo.repo,
-    issue_number:  THIS_ID,
-    body: comment,
-  });
-  return comment;
-}
-
-
-
-
-function getNextPage (context) {
+function getNextPage (octokit, context) {
   const parameters = {
     state: 'open',
     owner:  context.repo.owner,
@@ -67,17 +40,18 @@ function getNextPage (context) {
 
 
 
-async function run() {
+async function run_blocks(github) {
+  const context = github.context;
   try {
     var allBlockers = Array();
-    for await (const response of getNextPage(context)) {
-      const blockers = validate(response, THIS_ID);
+    for await (const response of getNextPage(octokit, context)) {
+      const blockers = validate(response, THIS_ISSUE);
       allBlockers = allBlockers.concat(blockers); 
     }
 
     if(allBlockers.length) {
       allBlockers.sort((l, r) => l.number - r.number );
-      const comment = postComment(context, allBlockers);
+      const comment = gh.postComment(THIS_ISSUE, octokit, context, allBlockers);
       core.setOutput(outputKey, comment);
       return;
     }
@@ -95,14 +69,34 @@ async function run() {
   }
 }
 
-//run();
+if (mode === 'blocked by') {
+  run_blocked_by(github);
+} else {
+  run_blocks(github);
+}
 
-  /*
-function getIssue(octokit, { repo { owner, repo }, ...rest } = context) {
+/*
+ github = require('../tests/github.object.json');
+ this_body = this_issue_body(github);
+*/
 
 
+/**
+ *
+ * @param octokit github.octokit object
+ * @param {Object[]} issues Array of blocking issues
+ * @param issues[].owner owner, undefined = get from context
+ * @param issues[].repo repo, undefined = get from context
+ * @param issues[].issue_number
+ **/
+
+function run_blocked_by(github) {
+  const extract_issue_body = (github) => (github.context.payload.issue.body);
+  this_body = extract_issue_body(github)
+  parsed = bodyParser.parse(this_body);
+  blockers = bodyParser.getAllBlockerIssues(parsed);
+  
+  console.log(`blocked: ${jsLog(blocker)}`);
 
 }
 
-
-*/
