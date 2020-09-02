@@ -120,7 +120,7 @@ multi_line_body = `
 `;
 
 mlb_2 = `
-  Blocked by #12, #13, #15745
+  Blocked by #12, blocked by #13, Blocked by  #15745
   Blocked by: #22, #23, #25
   blocked by #15
   blocked by:  #22, #23
