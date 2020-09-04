@@ -2,43 +2,76 @@ const parse = require('./bodyParser');
 
 
 test('single_issue_body ', () => {
-   single_issue_body = 'blocked by: #31' 
-  expect(parse(single_issue_body)).toEqual([
+  body = 'blocked by: #31' 
+  expect(parse(body)).toEqual([
     { owner: undefined, repo: undefined, issue_number: 31 }
   ]);
 });
 
 
-multi_line_body = `
+test('single issue other repo', () => {
+  body = 'Blocked by  angelkenneth/issue-closing-sample/issues#11' 
+  expect(parse(body)).toEqual([
+    { owner: 'angelkenneth', repo: 'issue-closing-sample', issue_number: 11 }
+  ]);
+})
+
+test('multi_line_body', () => {
+  body = `
   Marvelous commit message 
   Fixes #11 and #15
-  Blocked by #12, #13, #15745
-  Blocked by: #22, #23, #25
+  Blocked by #12, Blocked by: #13, Blocked By:  #15745
+  Blocked by: #22,Blocked by: #23, Blocked by: #25
 `;
+expect(parse(body)).toEqual([
+  { owner: undefined, repo: undefined, issue_number: 12 },
+  { owner: undefined, repo: undefined, issue_number: 13 },
+  { owner: undefined, repo: undefined, issue_number: 22 },
+  { owner: undefined, repo: undefined, issue_number: 23 },
+  { owner: undefined, repo: undefined, issue_number: 25 },
+  { owner: undefined, repo: undefined, issue_number: 15745 },
+])
+})
 
-mlb_2 = `
+
+test('multi_line_body2', () => {
+  body = `
   Blocked by #12345, blocked by #1301, Blocked by #15745
-  Blocked by: #22, #23, #25
   blocked by #15
-  blocked by:  #22, #23
+  blocked by:      #22   , blocked by #23
 `;
 
-mlb_3_with_dups = `
+expect(parse(body)).toEqual([
+  { owner: undefined, repo: undefined, issue_number: 15  },
+  { owner: undefined, repo: undefined, issue_number: 22 },
+  { owner: undefined, repo: undefined, issue_number: 23 },
+  { owner: undefined, repo: undefined, issue_number: 1301  },
+  { owner: undefined, repo: undefined, issue_number: 12345 },
+  { owner: undefined, repo: undefined, issue_number: 15745 },
+])
+})
+
+
+test('body_with_dups ', () => {
+  body = `
   Blocked by: #22,blocked by #23,blocked by #25
   blocked by #22
-`
-
-multi_line_body_other_repo = `
-  Blocked by  angelkenneth/issue-closing-sample/issues#11 #12
-  Blocked by: angelkenneth/issue-closing-sample/issues#11 #12
-  blocked by  angelkenneth/issue-closing-sample/issues#11, #12
-  blocked by: angelkenneth/issue-closing-sample/issues#11, #12
 `;
+expect(parse(body)).toEqual([
+  { owner: undefined, repo: undefined, issue_number: 22 },
+  { owner: undefined, repo: undefined, issue_number: 23 },
+  { owner: undefined, repo: undefined, issue_number: 25 },
+])
+})
 
 
-body = 'blocked by: #13,blocked by #14'
+test('multi_line_body_other_repo', () => {
+  body = `
+  Blocked by  angelkenneth/issue-closing-sample/issues#11, blocked by #12
+  `;
 
-
-
-
+expect(parse(body)).toEqual([
+  { owner: 'angelkenneth', repo: 'issue-closing-sample', issue_number: 11 },
+  { owner: undefined, repo: undefined, issue_number: 12 },
+])
 

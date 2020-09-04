@@ -3,20 +3,22 @@ const ip = issueParser('github', { actions: { blocks: ['blocks'], blocked: ['blo
 const allSettled = require('promise.allsettled');
 const _ = require('lodash');
 
+
 const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
 function _no_empty (ch) { return ch  !== ''; };
 function _linerizer (body) { return body.replace(/[\r\t]/g, ' ').split(/\n/).map((line) => line.trim()).filter(_no_empty) };
 function parse(body) {
   const lines = _linerizer(body);
-  return lines.map((line) => {
+  return _.sortedUniqBy(lines.map((line) => {
     const blocked_by = ip(line).actions.blocked; 
-    //console.log(`blocked_by: ${jsLog(blocked_by)}`);
+    // console.log(`line: ${jsLog(line)}`);
+    // console.log(`blocked_by: ${jsLog(blocked_by)}`);
     if (blocked_by.length <= 0) {
       return [];
     }
     const blockers = blocked_by.map((block) => {
-      if(block.slug) {
-        const [ owner, repo ] = slug.split('/');
+      if(block['slug']) {
+        const [ owner, repo ] = block['slug'].split('/');
         return {
           owner,
           repo,
@@ -30,14 +32,8 @@ function parse(body) {
       }
     }) 
     return blockers;
-  }).flat();
+  }).flat().sort((l, r) =>  l.issue_number - r.issue_number), 'issue_number');
 }
 
 
-
-
-
 module.exports = parse;
-
- single_issue_body = 'blocked by: #31' 
-
