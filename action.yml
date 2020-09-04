@@ -8,6 +8,11 @@ inputs:
     description:  '[Number] Overrides the github request default.'
     required: false
     default: '30'
+  mode:
+    description: "Mode to use when scanning for issues, either 'blocked by' or 'blocks', see README for details"
+    required: false
+    default: 'blocked by'
+
 outputs:
   blockers:
     description: 'List of issues this one is dependent on'

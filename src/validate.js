@@ -1,5 +1,5 @@
 const issueParser = require('issue-parser'); 
-const parse = issueParser('github', { actions: { blocks: ['blocks'] }});
+const parse = issueParser('github', { actions: { blocks: ['blocks'], blocked: [ 'blocked by' ] }});
 const _ = require('lodash');
 const core = require('@actions/core');
 
@@ -40,29 +40,38 @@ function PreFilteredIssues(issues, THIS_ID) {
 //TODO: after moving to typescript, use Pick<T,K> instead
 // or maybe json -> typescript:interface?
 //STEP 1.
-function ResponseData(response) {
-  return response.data.map((issue) => {
-    return _.pick(issue,
-      [
-        'author_association',
-        'body',
-        'id',
-        'number',
-        'repository_url',
-        'state',
-        'title',
-        'user',
-        //TODO:  we don't need all the user subkeys, this should work :( 
-        // 'user.avatar_url',
-        // 'user.gravatar_id',
-        // 'user.id',
-        // 'user.login',
-        // 'user.repos_url',
-        // 'user.type',
-        // 'user.url',
-        // user.node_id
-      ])
-  })
+const IssueFields = [
+  'author_association',
+  'body',
+  'id',
+  'number',
+  'repository_url',
+  'state',
+  'title',
+  //'user',
+  //TODO:  we don't need all the user subkeys, this should work :( 
+  // 'user.avatar_url',
+  // 'user.gravatar_id',
+  // 'user.id',
+  // 'user.login',
+  // 'user.repos_url',
+  // 'user.type',
+  // 'user.url',
+  // user.node_id
+];
+
+
+
+
+function SingleResponseData({ status, value }) {
+  return _.pick(value.data, IssueFields)
+}
+
+
+
+
+function MultiResponseData(response) {
+  return response.data.map(SingleResponseData);
 }
 
 
@@ -91,9 +100,9 @@ function validate(response, THIS_ID) {
       return (toInt(curr.issue) === THIS_ID) ? arr.concat(curr) : arr
     }, []);
   });
-  const issues = PreFilteredIssues(ResponseData(response), THIS_ID);
+  const issues = PreFilteredIssues(MultiResponseData(response), THIS_ID);
   return issues.filter(doesBlockThisIssue);
 }
 
-module.exports = validate; 
+module.exports = { SingleResponseData, validate}; 
 

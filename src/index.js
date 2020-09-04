@@ -4,6 +4,10 @@ const context = github.context;
 const DEBUG = true; //core.isDebug();
 const debug = core.debug;
 const repoToken = core.getInput('repo-token');
+const octokit = github.getOctokit(repoToken);
+const perPage = parseInt(core.getInput('per-page'));
+const mode = core.getInput('mode');
+
 
 if (!repoToken) { 
   core.setFailed('repo-token was not set');
@@ -12,53 +16,22 @@ if (!repoToken) {
 
 
 
-
-
+const parse = require('./bodyParser');
+const gh = require('./ghIssueService');
+const { SingleResponseData, validate } = require('./validate');
 const outputKey = 'blockers';
 const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
 
-const THIS_ID = parseInt(context.payload.issue.number, 10);
-debug(`THIS_ID: ${THIS_ID}`);
-
-console.log(`github object: ${jsLog(github)}`)
+const THIS_ISSUE = parseInt(context.payload.issue.number, 10);
+debug(`THIS_ISSUE: ${THIS_ISSUE}`);
 
 
 
-const octokit = github.getOctokit(repoToken);
-const perPage = parseInt(core.getInput('per-page'));
-const validate = require('./validate');
-
-
-
-
-function postComment(context, blockers) {
-  if (DEBUG) { debug(`postComment: ${blockers}`)}
-  const blocker_str = blockers.map((blocker) => { return `#${blocker.number}` }).join(' ');
-  const comment =`This issue cannot be closed at this time, it is dependent on the following issue(s): ${blocker_str}`;
-
-  octokit.issues.update({
-    owner:  context.repo.owner,
-    repo:   context.repo.repo,
-    issue_number:  THIS_ID,
-    state: 'open',
-  });
-  octokit.issues.createComment({
-    owner:  context.repo.owner,
-    repo:   context.repo.repo,
-    issue_number:  THIS_ID,
-    body: comment,
-  });
-  return comment;
-}
-
-
-
-
-function getNextPage (context) {
+function getNextPage (octokit, {owner, repo}) {
   const parameters = {
     state: 'open',
-    owner:  context.repo.owner,
-    repo:   context.repo.repo,
+    owner,
+    repo,
     per_page: perPage, 
   };
   return octokit.paginate.iterator(octokit.issues.listForRepo, parameters);
@@ -67,17 +40,45 @@ function getNextPage (context) {
 
 
 
-async function run() {
+async function run_blocked_by(github, this_issue) {
+  const this_body = github.context.payload.issue.body;
+  const parsed = parse(this_body);
+  const [ rejected, accepted ] = await gh.getAllBlockerIssues(octokit, context, parsed);
+  
+  if (rejected.length > 0) {
+    const reasons = rejected.map((_status, reason) => { 
+      return { status, name } = reason;
+    });
+    core.debug(`unable to get status on a few issues: ${jsLog(reasons)}`);
+  }
+  if (accepted.length == 0 ) {
+    core.setOutput(outputKey, 'No blocking issues, this issue is now permanently closed');
+    return;
+  }
+  const openBlockers = accepted.filter(({_prmStatus,  value}) => value.data.state === 'open').map(SingleResponseData);
+
+  //console.log(`blocked: ${jsLog(openBlockers)}`);
+   
+  const comment = gh.postComment(octokit, openBlockers, this_issue, ...context);
+  console.log(`comment: ${comment}`)
+  core.setOutput(outputKey, comment);
+}
+
+
+
+
+async function run_blocks(github, this_issue) {
+  const context = github.context;
   try {
-    var allBlockers = Array();
-    for await (const response of getNextPage(context)) {
-      const blockers = validate(response, THIS_ID);
-      allBlockers = allBlockers.concat(blockers); 
+    var openBlockers = Array();
+    for await (const response of getNextPage(octokit, context)) {
+      const blockers = validate(response, this_issue);
+      openBlockers = openBlockers.concat(blockers); 
     }
 
-    if(allBlockers.length) {
-      allBlockers.sort((l, r) => l.number - r.number );
-      const comment = postComment(context, allBlockers);
+    if(openBlockers.length) {
+      openBlockers = openBlockers.sort((l, r) => l.number - r.number );
+      const comment = gh.postComment( octokit, openBlockers, this_issue, ...context);
       core.setOutput(outputKey, comment);
       return;
     }
@@ -95,14 +96,19 @@ async function run() {
   }
 }
 
-//run();
-
-  /*
-function getIssue(octokit, { repo { owner, repo }, ...rest } = context) {
-
-
-
+if (mode === 'blocked by') {
+  run_blocked_by(github, THIS_ISSUE);
+} else {
+  run_blocks(github, THIS_ISSUE);
 }
 
+/*
+ github = require('../tests/github.object.json');
+ this_body = this_issue_body(github);
+ */
 
-*/
+
+body = "blocked by #22, blocked by: #23, blocked by #24 \r\n\tblocked by #25, blocked by: #26, blocked by #27 \r\nblocked by #28, BLOCKED BY #29 \r\n";
+
+
+

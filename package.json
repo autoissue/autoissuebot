@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "rel": "ncc build src/index.js"
   },
   "publishConfig": {
@@ -16,9 +16,12 @@
   "dependencies": {
     "@actions/core": "^1.2.4",
     "@actions/github": "^3.0.0",
-    "all-settled": "^1.0.0",
     "github-client": "^0.8.0",
     "issue-parser": "^6.0.0",
-    "lodash": "^4.17.19"
+    "lodash": "^4.17.19",
+    "promise.allsettled": "^1.0.2"
+  },
+  "devDependencies": {
+    "jest": "^26.4.2"
   }
 }
