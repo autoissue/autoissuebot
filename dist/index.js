@@ -5776,7 +5776,7 @@ module.exports = function SameValue(x, y) {
 
 
 
-function getIssue(octokit, { owner, repo, issue_number }) {
+function getIssue(octokit, owner, repo, issue_number) {
   return octokit.issues.get({
     owner,
     repo,
@@ -5797,7 +5797,7 @@ function getIssue(octokit, { owner, repo, issue_number }) {
  **/
 function getAllBlockerIssues(octokit, issues) {
   return allSettled(issues.map((issue) => {
-    return getIssue(octokit, issue)
+    return getIssue(octokit, ...issue)
   })).then((results) => {
     return _.partition(results, (prm) => { return prm.status === 'rejected'} );
   });
@@ -5806,21 +5806,21 @@ function getAllBlockerIssues(octokit, issues) {
 
 
 
-function postComment(THIS_ISSUE, octokit, context, blockers) {
+function postComment(issue, octokit, blockers, owner, repo) {
   if (DEBUG) { debug(`postComment: ${blockers}`)}
   const blocker_str = blockers.map((blocker) => { return `#${blocker.number}` }).join(' ');
   const comment =`This issue cannot be closed at this time, it is dependent on the following issue(s): ${blocker_str}`;
 
   octokit.issues.update({
-    owner:  context.repo.owner,
-    repo:   context.repo.repo,
-    issue_number:  THIS_ISSUE,
+    owner,
+    repo,
+    issue_number:  issue,
     state: 'open',
   });
   octokit.issues.createComment({
-    owner:  context.repo.owner,
-    repo:   context.repo.repo,
-    issue_number:  THIS_ISSUE,
+    owner,
+    repo,
+    issue_number:  issue,
     body: comment,
   });
   return comment;
@@ -14729,20 +14729,22 @@ const ip = issueParser('github', { actions: { blocks: ['blocks'], blocked: ['blo
 const allSettled = __webpack_require__(843);
 const _ = __webpack_require__(772);
 
+
 const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
 function _no_empty (ch) { return ch  !== ''; };
 function _linerizer (body) { return body.replace(/[\r\t]/g, ' ').split(/\n/).map((line) => line.trim()).filter(_no_empty) };
 function parse(body) {
   const lines = _linerizer(body);
-  return lines.map((line) => {
+  return _.sortedUniqBy(lines.map((line) => {
     const blocked_by = ip(line).actions.blocked; 
-    //console.log(`blocked_by: ${jsLog(blocked_by)}`);
+    // console.log(`line: ${jsLog(line)}`);
+    // console.log(`blocked_by: ${jsLog(blocked_by)}`);
     if (blocked_by.length <= 0) {
       return [];
     }
     const blockers = blocked_by.map((block) => {
-      if(block.slug) {
-        const [ owner, repo ] = slug.split('/');
+      if(block['slug']) {
+        const [ owner, repo ] = block['slug'].split('/');
         return {
           owner,
           repo,
@@ -14756,17 +14758,11 @@ function parse(body) {
       }
     }) 
     return blockers;
-  }).flat();
+  }).flat().sort((l, r) =>  l.issue_number - r.issue_number), 'issue_number');
 }
 
 
-
-
-
 module.exports = parse;
-
- single_issue_body = 'blocked by: #31' 
-
 
 
 /***/ }),
@@ -32815,7 +32811,7 @@ if (!repoToken) {
 
 
 
-const bodyParser = __webpack_require__(702);
+const parse = __webpack_require__(702);
 const gh = __webpack_require__(274);
 const validate = __webpack_require__(853);
 const outputKey = 'blockers';
@@ -32826,11 +32822,11 @@ debug(`THIS_ISSUE: ${THIS_ISSUE}`);
 
 
 
-function getNextPage (octokit, context) {
+function getNextPage (octokit, { owner, repo}) {
   const parameters = {
     state: 'open',
-    owner:  context.repo.owner,
-    repo:   context.repo.repo,
+    owner,
+    repo,
     per_page: perPage, 
   };
   return octokit.paginate.iterator(octokit.issues.listForRepo, parameters);
@@ -32839,18 +32835,43 @@ function getNextPage (octokit, context) {
 
 
 
-async function run_blocks(github) {
+async function run_blocked_by(github, this_issue) {
+  const this_body = github.context.payload.issue.body;
+  const parsed = parse.parse(this_body);
+  const blockers = gh.getAllBlockerIssues(parsed);
+  blockers.then(console.log); 
+  console.log(`blocked: ${jsLog(blocker)}`);
+  if (blockers.length == 0 ) {
+    core.setOutput(outputKey, 'No blocking issues, this issue is now permanently closed');
+    return;
+  }
+  //ok, cool
+  console.log(`get status of blocker issues`)
+
+
+
+  //then postComment
+
+  const comment = gh.postComment(this_issue, octokit, context, allBlockers);
+  core.setOutput(outputKey, comment);
+
+}
+
+
+
+
+async function run_blocks(github, this_issue) {
   const context = github.context;
   try {
     var allBlockers = Array();
     for await (const response of getNextPage(octokit, context)) {
-      const blockers = validate(response, THIS_ISSUE);
+      const blockers = validate(response, this_issue);
       allBlockers = allBlockers.concat(blockers); 
     }
 
     if(allBlockers.length) {
       allBlockers.sort((l, r) => l.number - r.number );
-      const comment = gh.postComment(THIS_ISSUE, octokit, context, allBlockers);
+      const comment = gh.postComment(this_issue, octokit, context, allBlockers);
       core.setOutput(outputKey, comment);
       return;
     }
@@ -32869,35 +32890,16 @@ async function run_blocks(github) {
 }
 
 if (mode === 'blocked by') {
-  run_blocked_by(github);
+  run_blocked_by(github, THIS_ISSUE);
 } else {
-  run_blocks(github);
+  run_blocks(github, THIS_ISSUE);
 }
 
 /*
  github = require('../tests/github.object.json');
  this_body = this_issue_body(github);
-*/
+ */
 
-
-/**
- *
- * @param octokit github.octokit object
- * @param {Object[]} issues Array of blocking issues
- * @param issues[].owner owner, undefined = get from context
- * @param issues[].repo repo, undefined = get from context
- * @param issues[].issue_number
- **/
-
-function run_blocked_by(github) {
-  const extract_issue_body = (github) => (github.context.payload.issue.body);
-  this_body = extract_issue_body(github)
-  parsed = bodyParser.parse(this_body);
-  blockers = bodyParser.getAllBlockerIssues(parsed);
-  
-  console.log(`blocked: ${jsLog(blocker)}`);
-
-}
 
 
 
