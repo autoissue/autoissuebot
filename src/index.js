@@ -43,11 +43,11 @@ function getNextPage (octokit, {owner, repo}) {
 async function run_blocked_by(github, this_issue) {
   const this_body = github.context.payload.issue.body;
   const parsed = parse(this_body);
-  const [ rejected, accepted ] = await gh.getAllBlockerIssues(octokit, context, parsed);
+  const [ accepted, rejected ] = await gh.getAllBlockerIssues(octokit, context, parsed);
   
   if (rejected.length > 0) {
-    const reasons = rejected.map((_status, reason) => { 
-      return { status, name } = reason;
+    const reasons = rejected.map((reqStatus, reason) => { 
+      return { reqStatus, name } = reason;
     });
     core.debug(`unable to get status on a few issues: ${jsLog(reasons)}`);
   }

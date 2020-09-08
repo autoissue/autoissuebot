@@ -70,6 +70,18 @@ function SingleResponseData({ status, value }) {
 
 
 
+function FailResponseData({ reqStatus, reason }) {
+  return {
+    reqStatus,
+    _.pick(reason, [
+      'status',
+      'name',
+      'request',
+    ])
+  };
+}
+
+
 function MultiResponseData(response) {
   return response.data.map(SingleResponseData);
 }
@@ -104,5 +116,5 @@ function validate(response, THIS_ID) {
   return issues.filter(doesBlockThisIssue);
 }
 
-module.exports = { SingleResponseData, validate}; 
+module.exports = { SingleResponseData, MultiResponseData, FailResponseData, validate}; 
 

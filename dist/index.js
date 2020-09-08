@@ -5816,8 +5816,8 @@ function getIssue(octokit, { owner, repo, issue_number }) {
  * @param octokit github.octokit object
  * @param context github.context object
  * @param {Object[]} issues Array of blocking issues
- * @param issues[].owner owner, undefined = get from context
- * @param issues[].repo repo, undefined = get from context
+ * @param issues[].owner owner, if undefined = get from context
+ * @param issues[].repo repo, if undefined = get from context
  * @param issues[].issue_number
  **/
 function getAllBlockerIssues(octokit, context, issues) {
@@ -5831,7 +5831,15 @@ function getAllBlockerIssues(octokit, context, issues) {
     })
   })).then((results) => {
     //console.log(`results: ${jsLog(results, null, 2)}`)
-    return _.partition(results, function (pms) { return pms.status === 'rejected'} );
+    return _.partition(results, [ 'status', 'rejected' ])
+  }).then((results) => {
+    console.log(`results after partition:|${jsLog(results)}|\n`);
+    return results.map(( [ accepted, rejected ]) => {
+      return [
+        accepted.map(ResponseData), 
+        rejected,
+      ]
+    });
   });
 }
 
@@ -15710,7 +15718,7 @@ function getNextPage (octokit, {owner, repo}) {
 async function run_blocked_by(github, this_issue) {
   const this_body = github.context.payload.issue.body;
   const parsed = parse(this_body);
-  const [ rejected, accepted ] = await gh.getAllBlockerIssues(octokit, context, parsed);
+  const [ accepted, rejected ] = await gh.getAllBlockerIssues(octokit, context, parsed);
   
   if (rejected.length > 0) {
     const reasons = rejected.map((_status, reason) => { 
