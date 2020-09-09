@@ -15708,6 +15708,7 @@ async function run_blocked_by(github, this_issue) {
   const parsed = parse(this_body);
   
   const results = await gh.getAllBlockerIssues(octokit, context, parsed);
+  
   const [ accepted, rejected ] = FilterMultiIssueResponse(results);
 
   if (rejected.length > 0) {
@@ -16371,6 +16372,7 @@ const IssueFields = [
 
 
 function SingleResponseData({ status, value }) {
+  console.log(`SingleResponseData: ${jsLog(value)}`);
   return {
     ..._.pick(value.data, IssueFields),
     status: value.status,
