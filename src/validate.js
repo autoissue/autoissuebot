@@ -64,7 +64,7 @@ const IssueFields = [
 
 
 function SingleResponseData({ status, value }) {
-  console.log(`SingleResponseData: ${jsLog(value)}`);
+  // console.log(`SingleResponseData: ${jsLog(value)}`);
   return {
     ..._.pick(value.data, IssueFields),
     status: value.status,

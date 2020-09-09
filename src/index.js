@@ -43,32 +43,41 @@ function getNextPage (octokit, {owner, repo}) {
 async function run_blocked_by(github, this_issue) {
   const this_body = github.context.payload.issue.body;
   const parsed = parse(this_body);
-  
+  const context = github.context;
   const results = await gh.getAllBlockerIssues(octokit, context, parsed);
   
-  const [ accepted, rejected ] = FilterMultiIssueResponse(results);
+  const [ fulfilled, rejected ] = FilterMultiIssueResponse(results);
 
   if (rejected.length > 0) {
     const reasons = rejected.map((reqStatus, reason) => { 
       return { reqStatus, name } = reason;
     });
-    core.debug(`unable to get status on a few issues: ${jsLog(reasons)}`);
+    core.debug(`unable to get status on a few issues: ${jsLog(rejected)}`);
   }
-  if (accepted.length == 0 ) {
+  
+  const openBlockers = _checkOpenBlockers(fulfilled);
+  if (openBlockers.length <= 0 ) {
     core.setOutput(outputKey, 'No blocking issues, this issue is now permanently closed');
-    return;
   }
-  const openBlockers = accepted.filter(({_prmStatus,  value}) => value.data.state === 'open').map(SingleResponseData);
-
-  //console.log(`blocked: ${jsLog(openBlockers)}`);
    
-  const comment = gh.postComment(octokit, openBlockers, this_issue, ...context);
+  const comment = gh.postComment(octokit, openBlockers, this_issue, github.context.repo.owner, github.context.repo.repo );
   console.log(`comment: ${comment}`)
   core.setOutput(outputKey, comment);
+  
+  console.log(`fulfilled: ${jsLog(fulfilled)}`);
+ 
+
 }
 
 
 
+function _checkOpenBlockers(fulfilled) {
+  const openBlockers  = fulfilled.filter((blocker) => blocker.state === 'open');
+  if ( fulfilled.length <= 0 || openBlockers.length <= 0 ) {
+    return [];
+  }
+  return openBlockers.sort((l, r) => l.number - r.number)
+}
 
 async function run_blocks(github, this_issue) {
   const context = github.context;
