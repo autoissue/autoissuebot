@@ -4,7 +4,7 @@ const parse = require('./bodyParser');
 test('single_issue_body ', () => {
   body = 'blocked by: #31' 
   expect(parse(body)).toEqual([
-    { owner: undefined, repo: undefined, issue_number: 31 }
+    { owner: '', repo: '', issue_number: 31 }
   ]);
 });
 
@@ -24,12 +24,12 @@ test('multi_line_body', () => {
   Blocked by: #22,Blocked by: #23, Blocked by: #25
 `;
 expect(parse(body)).toEqual([
-  { owner: undefined, repo: undefined, issue_number: 12 },
-  { owner: undefined, repo: undefined, issue_number: 13 },
-  { owner: undefined, repo: undefined, issue_number: 22 },
-  { owner: undefined, repo: undefined, issue_number: 23 },
-  { owner: undefined, repo: undefined, issue_number: 25 },
-  { owner: undefined, repo: undefined, issue_number: 15745 },
+  { owner: '', repo: '', issue_number: 12 },
+  { owner: '', repo: '', issue_number: 13 },
+  { owner: '', repo: '', issue_number: 22 },
+  { owner: '', repo: '', issue_number: 23 },
+  { owner: '', repo: '', issue_number: 25 },
+  { owner: '', repo: '', issue_number: 15745 },
 ])
 })
 
@@ -42,12 +42,12 @@ test('multi_line_body2', () => {
 `;
 
 expect(parse(body)).toEqual([
-  { owner: undefined, repo: undefined, issue_number: 15  },
-  { owner: undefined, repo: undefined, issue_number: 22 },
-  { owner: undefined, repo: undefined, issue_number: 23 },
-  { owner: undefined, repo: undefined, issue_number: 1301  },
-  { owner: undefined, repo: undefined, issue_number: 12345 },
-  { owner: undefined, repo: undefined, issue_number: 15745 },
+  { owner: '', repo: '', issue_number: 15  },
+  { owner: '', repo: '', issue_number: 22 },
+  { owner: '', repo: '', issue_number: 23 },
+  { owner: '', repo: '', issue_number: 1301  },
+  { owner: '', repo: '', issue_number: 12345 },
+  { owner: '', repo: '', issue_number: 15745 },
 ])
 })
 
@@ -58,9 +58,9 @@ test('body_with_dups ', () => {
   blocked by #22
 `;
 expect(parse(body)).toEqual([
-  { owner: undefined, repo: undefined, issue_number: 22 },
-  { owner: undefined, repo: undefined, issue_number: 23 },
-  { owner: undefined, repo: undefined, issue_number: 25 },
+  { owner: '', repo: '', issue_number: 22 },
+  { owner: '', repo: '', issue_number: 23 },
+  { owner: '', repo: '', issue_number: 25 },
 ])
 })
 
@@ -70,8 +70,10 @@ test('multi_line_body_other_repo', () => {
   Blocked by  angelkenneth/issue-closing-sample/issues#11, blocked by #12
   `;
 
-expect(parse(body)).toEqual([
-  { owner: 'angelkenneth', repo: 'issue-closing-sample', issue_number: 11 },
-  { owner: undefined, repo: undefined, issue_number: 12 },
-])
+  expect(parse(body)).toEqual([
+    { owner: 'angelkenneth', repo: 'issue-closing-sample', issue_number: 11 },
+    { owner: '', repo: '', issue_number: 12 },
+  ]);
+});
+
 

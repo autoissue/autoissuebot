@@ -35,21 +35,10 @@ function getAllBlockerIssues(octokit, context, issues) {
           repo:  context.repo.repo,
       }
     })
-  })).then((results) => {
-    //console.log(`results: ${jsLog(results, null, 2)}`)
-    return _.partition(results, [ 'status', 'rejected' ])
-  }).then((results) => {
-    return results.map(( [ rejected, accepted ]) => {
-      return [
-        accepted.map(ResponseData), 
-        rejected.map(FailResponseData),
-      ]
-    });
-  });
+  }));
 }
 
-
-
+//.then((results) => {
 
 function postComment(octokit, blockers, issue, owner, repo) {
   //if (DEBUG) { debug(`postComment: ${blockers}`)}

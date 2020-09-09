@@ -64,27 +64,38 @@ const IssueFields = [
 
 
 function SingleResponseData({ status, value }) {
-  return _.pick(value.data, IssueFields)
-}
-
-
-
-
-function FailResponseData({ reqStatus, reason }) {
   return {
-    reqStatus,
-    _.pick(reason, [
-      'status',
-      'name',
-      'request',
-    ])
+    ..._.pick(value.data, IssueFields),
+    status: value.status,
+    ghApiResponseStatus: status,  
   };
 }
+
+
+
+
+function FailResponseData({ status, reason }) {
+  return {
+    status,
+    reason: _.pick(reason, [ 'status', 'name', 'request', ]),
+  };
+}
+
+
 
 
 function MultiResponseData(response) {
   return response.data.map(SingleResponseData);
 }
+
+
+
+
+function FilterMultiIssueResponse(allResponses) {
+  const [ rejected, accepted ] = _.partition(allResponses.flat(), [ 'status', 'rejected' ]);
+  return [ accepted.map(SingleResponseData), rejected.map(FailResponseData) ];
+}
+
 
 
 
@@ -116,5 +127,5 @@ function validate(response, THIS_ID) {
   return issues.filter(doesBlockThisIssue);
 }
 
-module.exports = { SingleResponseData, MultiResponseData, FailResponseData, validate}; 
+module.exports = { SingleResponseData, MultiResponseData, FailResponseData, FilterMultiIssueResponse, validate}; 
 

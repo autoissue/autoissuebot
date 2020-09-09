@@ -18,7 +18,7 @@ if (!repoToken) {
 
 const parse = require('./bodyParser');
 const gh = require('./ghIssueService');
-const { SingleResponseData, validate } = require('./validate');
+const { SingleResponseData, FilterMultiIssueResponse, validate } = require('./validate');
 const outputKey = 'blockers';
 const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
 
@@ -43,8 +43,10 @@ function getNextPage (octokit, {owner, repo}) {
 async function run_blocked_by(github, this_issue) {
   const this_body = github.context.payload.issue.body;
   const parsed = parse(this_body);
-  const [ accepted, rejected ] = await gh.getAllBlockerIssues(octokit, context, parsed);
   
+  const results = await gh.getAllBlockerIssues(octokit, context, parsed);
+  const [ accepted, rejected ] = FilterMultiIssueResponse(results);
+
   if (rejected.length > 0) {
     const reasons = rejected.map((reqStatus, reason) => { 
       return { reqStatus, name } = reason;

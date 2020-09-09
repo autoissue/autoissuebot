@@ -5796,7 +5796,7 @@ const allSettled = __webpack_require__(843);
 const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
 const _ = __webpack_require__(975);
 
-const { ResponseData } = __webpack_require__(853);
+const { ResponseData, FailResponseData } = __webpack_require__(853);
 
 
 
@@ -5829,22 +5829,10 @@ function getAllBlockerIssues(octokit, context, issues) {
           repo:  context.repo.repo,
       }
     })
-  })).then((results) => {
-    //console.log(`results: ${jsLog(results, null, 2)}`)
-    return _.partition(results, [ 'status', 'rejected' ])
-  }).then((results) => {
-    console.log(`results after partition:|${jsLog(results)}|\n`);
-    return results.map(( [ accepted, rejected ]) => {
-      return [
-        accepted.map(ResponseData), 
-        rejected,
-      ]
-    });
-  });
+  }));
 }
 
-
-
+//.then((results) => {
 
 function postComment(octokit, blockers, issue, owner, repo) {
   //if (DEBUG) { debug(`postComment: ${blockers}`)}
@@ -15693,7 +15681,7 @@ if (!repoToken) {
 
 const parse = __webpack_require__(702);
 const gh = __webpack_require__(274);
-const { SingleResponseData, validate } = __webpack_require__(853);
+const { SingleResponseData, FilterMultiIssueResponse, validate } = __webpack_require__(853);
 const outputKey = 'blockers';
 const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
 
@@ -15718,11 +15706,13 @@ function getNextPage (octokit, {owner, repo}) {
 async function run_blocked_by(github, this_issue) {
   const this_body = github.context.payload.issue.body;
   const parsed = parse(this_body);
-  const [ accepted, rejected ] = await gh.getAllBlockerIssues(octokit, context, parsed);
   
+  const results = await gh.getAllBlockerIssues(octokit, context, parsed);
+  const [ accepted, rejected ] = FilterMultiIssueResponse(results);
+
   if (rejected.length > 0) {
-    const reasons = rejected.map((_status, reason) => { 
-      return { status, name } = reason;
+    const reasons = rejected.map((reqStatus, reason) => { 
+      return { reqStatus, name } = reason;
     });
     core.debug(`unable to get status on a few issues: ${jsLog(reasons)}`);
   }
@@ -16381,7 +16371,21 @@ const IssueFields = [
 
 
 function SingleResponseData({ status, value }) {
-  return _.pick(value.data, IssueFields)
+  return {
+    ..._.pick(value.data, IssueFields),
+    status: value.status,
+    ghApiResponseStatus: status,  
+  };
+}
+
+
+
+
+function FailResponseData({ status, reason }) {
+  return {
+    status,
+    reason: _.pick(reason, [ 'status', 'name', 'request', ]),
+  };
 }
 
 
@@ -16390,6 +16394,15 @@ function SingleResponseData({ status, value }) {
 function MultiResponseData(response) {
   return response.data.map(SingleResponseData);
 }
+
+
+
+
+function FilterMultiIssueResponse(allResponses) {
+  const [ rejected, accepted ] = _.partition(allResponses.flat(), [ 'status', 'rejected' ]);
+  return [ accepted.map(SingleResponseData), rejected.map(FailResponseData) ];
+}
+
 
 
 
@@ -16421,7 +16434,7 @@ function validate(response, THIS_ID) {
   return issues.filter(doesBlockThisIssue);
 }
 
-module.exports = { SingleResponseData, validate}; 
+module.exports = { SingleResponseData, MultiResponseData, FailResponseData, FilterMultiIssueResponse, validate}; 
 
 
 
