@@ -9,14 +9,14 @@ const perPage = parseInt(core.getInput('per-page'));
 const mode = core.getInput('mode');
 
 
-if (!repoToken) { 
+if (!repoToken) {
   core.setFailed('repo-token was not set');
   process.exit(-1);
 }
 
 
 
-const parse = require('./bodyParser');
+const { parse }= require('./bodyParser');
 const gh = require('./ghIssueService');
 const { SingleResponseData, FilterMultiIssueResponse, validate } = require('./validate');
 const outputKey = 'blockers';
@@ -32,7 +32,7 @@ function getNextPage (octokit, {owner, repo}) {
     state: 'open',
     owner,
     repo,
-    per_page: perPage, 
+    per_page: perPage,
   };
   return octokit.paginate.iterator(octokit.issues.listForRepo, parameters);
 }
@@ -45,28 +45,24 @@ async function run_blocked_by(github, this_issue) {
   const parsed = parse(this_body);
   const context = github.context;
   const results = await gh.getAllBlockerIssues(octokit, context, parsed);
-  
+
   const [ fulfilled, rejected ] = FilterMultiIssueResponse(results);
 
   if (rejected.length > 0) {
-    const reasons = rejected.map((reqStatus, reason) => { 
+    const reasons = rejected.map((reqStatus, reason) => {
       return { reqStatus, name } = reason;
     });
     core.debug(`unable to get status on a few issues: ${jsLog(rejected)}`);
   }
-  
+
   const openBlockers = _checkOpenBlockers(fulfilled);
   if (openBlockers.length <= 0 ) {
     core.setOutput(outputKey, 'No blocking issues, this issue is now permanently closed');
   }
-   
-  const comment = gh.postComment(octokit, openBlockers, this_issue, github.context.repo.owner, github.context.repo.repo );
-  console.log(`comment: ${comment}`)
-  core.setOutput(outputKey, comment);
-  
-  console.log(`fulfilled: ${jsLog(fulfilled)}`);
- 
 
+  const comment = gh.postComment(octokit, openBlockers, this_issue, github.context.repo.owner, github.context.repo.repo );
+  core.setOutput(outputKey, comment);
+  console.log(`fulfilled: ${jsLog(fulfilled)}`);
 }
 
 
@@ -85,7 +81,7 @@ async function run_blocks(github, this_issue) {
     var openBlockers = Array();
     for await (const response of getNextPage(octokit, context)) {
       const blockers = validate(response, this_issue);
-      openBlockers = openBlockers.concat(blockers); 
+      openBlockers = openBlockers.concat(blockers);
     }
 
     if(openBlockers.length) {

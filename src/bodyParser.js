@@ -1,4 +1,4 @@
-const issueParser = require('issue-parser'); 
+const issueParser = require('issue-parser');
 const ip = issueParser('github', { actions: { blocks: ['blocks'], blocked: ['blocked by'] }});
 const _ = require('lodash');
 
@@ -15,7 +15,7 @@ function _flatten_sort(arr) {
 
 
 function _parse_all_blocked_by(line) {
-  const blocked_by = ip(line).actions.blocked; 
+  const blocked_by = ip(line).actions.blocked;
   //console.log(`line: ${jsLog(line)}`);
   //console.log(`blocked_by: ${jsLog(blocked_by)}`);
   if (blocked_by.length <= 0) {
@@ -27,15 +27,15 @@ function _parse_all_blocked_by(line) {
       return {
         owner,
         repo,
-        issue_number: parseInt(block.issue, 10), 
+        issue_number: parseInt(block.issue, 10),
       };
     }
     return {
       owner: '',
       repo: '',
-      issue_number: parseInt(block.issue, 10), 
+      issue_number: parseInt(block.issue, 10),
     }
-  }); 
+  });
   return blockers;
 }
 
@@ -45,4 +45,9 @@ function parse(body) {
 }
 
 
-module.exports = parse;
+module.exports = {
+  parse,
+  _parse_all_blocked_by,
+}
+
+
