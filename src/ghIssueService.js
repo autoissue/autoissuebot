@@ -38,7 +38,8 @@ function getAllBlockerIssues(octokit, context, issues) {
   }));
 }
 
-//.then((results) => {
+
+
 
 function postComment(octokit, blockers, issue, owner, repo) {
   //if (DEBUG) { debug(`postComment: ${blockers}`)}

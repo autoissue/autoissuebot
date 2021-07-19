@@ -5832,7 +5832,8 @@ function getAllBlockerIssues(octokit, context, issues) {
   }));
 }
 
-//.then((results) => {
+
+
 
 function postComment(octokit, blockers, issue, owner, repo) {
   //if (DEBUG) { debug(`postComment: ${blockers}`)}
@@ -15676,13 +15677,10 @@ const octokit = github.getOctokit(repoToken);
 const perPage = parseInt(core.getInput('per-page'));
 const mode = core.getInput('mode');
 
-
 if (!repoToken) {
   core.setFailed('repo-token was not set');
   process.exit(-1);
 }
-
-
 
 const { parse }= __webpack_require__(702);
 const gh = __webpack_require__(274);
@@ -15692,6 +15690,7 @@ const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
 
 const THIS_ISSUE = parseInt(context.payload.issue.number, 10);
 debug(`THIS_ISSUE: ${THIS_ISSUE}`);
+
 
 
 
@@ -15735,6 +15734,7 @@ async function run_blocked_by(github, this_issue) {
 
 
 
+
 function _checkOpenBlockers(fulfilled) {
   const openBlockers  = fulfilled.filter((blocker) => blocker.state === 'open');
   if ( fulfilled.length <= 0 || openBlockers.length <= 0 ) {
@@ -15772,21 +15772,43 @@ async function run_blocks(github, this_issue) {
   }
 }
 
+
+
+
 if (mode === 'blocked by') {
   run_blocked_by(github, THIS_ISSUE);
 } else {
   run_blocks(github, THIS_ISSUE);
 }
 
+
+
+
+
 /*
  github = require('../tests/github.object.json');
  this_body = this_issue_body(github);
+  body = "blocked by #22, blocked by: #23, blocked by #24 \r\n\tblocked by #25, blocked by: #26, blocked by #27 \r\nblocked by #28, BLOCKED BY #29 \r\n";
  */
 
 
-body = "blocked by #22, blocked by: #23, blocked by #24 \r\n\tblocked by #25, blocked by: #26, blocked by #27 \r\nblocked by #28, BLOCKED BY #29 \r\n";
 
+/**
+ *
+ * @param octokit github.octokit object
+ * @param {Object[]} issues Array of blocking issues
+ * @param issues[].owner owner, undefined = get from context
+ * @param issues[].repo repo, undefined = get from context
+ * @param issues[].issue_number
 
+function run_blocked_by(github) {
+  const extract_issue_body = (github) => (github.context.payload.issue.body);
+  this_body = extract_issue_body(github)
+  parsed = bodyParser.parse(this_body);
+  blockers = bodyParser.getAllBlockerIssues(parsed);
+
+  console.log(`blocked: ${jsLog(blocker)}`);
+***/
 
 
 
