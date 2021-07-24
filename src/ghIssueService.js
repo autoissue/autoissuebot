@@ -28,17 +28,18 @@ function getIssue(octokit, { owner, repo, issue_number }) {
  **/
 function getAllBlockerIssues(octokit, context, issues) {
   //console.log(`issues: ${jsLog(issues)}`);
-  return allSettled(issues.map((issue) => { 
+  return allSettled(issues.map((issue) => {
     return getIssue(octokit, {
       ...issue,
-      ...{ owner: context.repo.owner, 
+      ...{ owner: context.repo.owner,
           repo:  context.repo.repo,
       }
     })
   }));
 }
 
-//.then((results) => {
+
+
 
 function postComment(octokit, blockers, issue, owner, repo) {
   //if (DEBUG) { debug(`postComment: ${blockers}`)}

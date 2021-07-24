@@ -5822,17 +5822,18 @@ function getIssue(octokit, { owner, repo, issue_number }) {
  **/
 function getAllBlockerIssues(octokit, context, issues) {
   //console.log(`issues: ${jsLog(issues)}`);
-  return allSettled(issues.map((issue) => { 
+  return allSettled(issues.map((issue) => {
     return getIssue(octokit, {
       ...issue,
-      ...{ owner: context.repo.owner, 
+      ...{ owner: context.repo.owner,
           repo:  context.repo.repo,
       }
     })
   }));
 }
 
-//.then((results) => {
+
+
 
 function postComment(octokit, blockers, issue, owner, repo) {
   //if (DEBUG) { debug(`postComment: ${blockers}`)}
@@ -14752,7 +14753,7 @@ function removeHook (state, name, method) {
 /***/ 702:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-const issueParser = __webpack_require__(866); 
+const issueParser = __webpack_require__(866);
 const ip = issueParser('github', { actions: { blocks: ['blocks'], blocked: ['blocked by'] }});
 const _ = __webpack_require__(975);
 
@@ -14769,7 +14770,7 @@ function _flatten_sort(arr) {
 
 
 function _parse_all_blocked_by(line) {
-  const blocked_by = ip(line).actions.blocked; 
+  const blocked_by = ip(line).actions.blocked;
   //console.log(`line: ${jsLog(line)}`);
   //console.log(`blocked_by: ${jsLog(blocked_by)}`);
   if (blocked_by.length <= 0) {
@@ -14781,15 +14782,15 @@ function _parse_all_blocked_by(line) {
       return {
         owner,
         repo,
-        issue_number: parseInt(block.issue, 10), 
+        issue_number: parseInt(block.issue, 10),
       };
     }
     return {
       owner: '',
       repo: '',
-      issue_number: parseInt(block.issue, 10), 
+      issue_number: parseInt(block.issue, 10),
     }
-  }); 
+  });
   return blockers;
 }
 
@@ -14799,7 +14800,12 @@ function parse(body) {
 }
 
 
-module.exports = parse;
+module.exports = {
+  parse,
+  _parse_all_blocked_by,
+}
+
+
 
 
 /***/ }),
@@ -15671,15 +15677,12 @@ const octokit = github.getOctokit(repoToken);
 const perPage = parseInt(core.getInput('per-page'));
 const mode = core.getInput('mode');
 
-
-if (!repoToken) { 
+if (!repoToken) {
   core.setFailed('repo-token was not set');
   process.exit(-1);
 }
 
-
-
-const parse = __webpack_require__(702);
+const { parse }= __webpack_require__(702);
 const gh = __webpack_require__(274);
 const { SingleResponseData, FilterMultiIssueResponse, validate } = __webpack_require__(853);
 const outputKey = 'blockers';
@@ -15690,12 +15693,13 @@ debug(`THIS_ISSUE: ${THIS_ISSUE}`);
 
 
 
+
 function getNextPage (octokit, {owner, repo}) {
   const parameters = {
     state: 'open',
     owner,
     repo,
-    per_page: perPage, 
+    per_page: perPage,
   };
   return octokit.paginate.iterator(octokit.issues.listForRepo, parameters);
 }
@@ -15708,29 +15712,26 @@ async function run_blocked_by(github, this_issue) {
   const parsed = parse(this_body);
   const context = github.context;
   const results = await gh.getAllBlockerIssues(octokit, context, parsed);
-  
+
   const [ fulfilled, rejected ] = FilterMultiIssueResponse(results);
 
   if (rejected.length > 0) {
-    const reasons = rejected.map((reqStatus, reason) => { 
+    const reasons = rejected.map((reqStatus, reason) => {
       return { reqStatus, name } = reason;
     });
     core.debug(`unable to get status on a few issues: ${jsLog(rejected)}`);
   }
-  
+
   const openBlockers = _checkOpenBlockers(fulfilled);
   if (openBlockers.length <= 0 ) {
     core.setOutput(outputKey, 'No blocking issues, this issue is now permanently closed');
   }
-   
-  const comment = gh.postComment(octokit, openBlockers, this_issue, github.context.repo.owner, github.context.repo.repo );
-  console.log(`comment: ${comment}`)
-  core.setOutput(outputKey, comment);
-  
-  console.log(`fulfilled: ${jsLog(fulfilled)}`);
- 
 
+  const comment = gh.postComment(octokit, openBlockers, this_issue, github.context.repo.owner, github.context.repo.repo );
+  core.setOutput(outputKey, comment);
+  console.log(`fulfilled: ${jsLog(fulfilled)}`);
 }
+
 
 
 
@@ -15748,7 +15749,7 @@ async function run_blocks(github, this_issue) {
     var openBlockers = Array();
     for await (const response of getNextPage(octokit, context)) {
       const blockers = validate(response, this_issue);
-      openBlockers = openBlockers.concat(blockers); 
+      openBlockers = openBlockers.concat(blockers);
     }
 
     if(openBlockers.length) {
@@ -15771,21 +15772,43 @@ async function run_blocks(github, this_issue) {
   }
 }
 
+
+
+
 if (mode === 'blocked by') {
   run_blocked_by(github, THIS_ISSUE);
 } else {
   run_blocks(github, THIS_ISSUE);
 }
 
+
+
+
+
 /*
  github = require('../tests/github.object.json');
  this_body = this_issue_body(github);
+  body = "blocked by #22, blocked by: #23, blocked by #24 \r\n\tblocked by #25, blocked by: #26, blocked by #27 \r\nblocked by #28, BLOCKED BY #29 \r\n";
  */
 
 
-body = "blocked by #22, blocked by: #23, blocked by #24 \r\n\tblocked by #25, blocked by: #26, blocked by #27 \r\nblocked by #28, BLOCKED BY #29 \r\n";
 
+/**
+ *
+ * @param octokit github.octokit object
+ * @param {Object[]} issues Array of blocking issues
+ * @param issues[].owner owner, undefined = get from context
+ * @param issues[].repo repo, undefined = get from context
+ * @param issues[].issue_number
 
+function run_blocked_by(github) {
+  const extract_issue_body = (github) => (github.context.payload.issue.body);
+  this_body = extract_issue_body(github)
+  parsed = bodyParser.parse(this_body);
+  blockers = bodyParser.getAllBlockerIssues(parsed);
+
+  console.log(`blocked: ${jsLog(blocker)}`);
+***/
 
 
 
@@ -16315,7 +16338,7 @@ module.exports = function ToNumber(argument) {
 /***/ 853:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-const issueParser = __webpack_require__(866); 
+const issueParser = __webpack_require__(866);
 const parse = issueParser('github', { actions: { blocks: ['blocks'], blocked: [ 'blocked by' ] }});
 const _ = __webpack_require__(975);
 const core = __webpack_require__(357);
@@ -16335,7 +16358,7 @@ const toInt = (str) => { return parseInt(str, 10)}
 
 // STEP 2.
 function PreFilteredIssues(issues, THIS_ID) {
-  const hasValidBody = (issue) => (issue.body !== '' && issue.body.includes(THIS_ID)); 
+  const hasValidBody = (issue) => (issue.body !== '' && issue.body.includes(THIS_ID));
   const isNotThisIssues = (issue) => toInt(issue.number) !== THIS_ID;
   const hasAllowedCollaboratorTypes = (issue) =>
     ([ 'COLLABORATOR', 'CONTRIBUTOR', 'MEMBER', 'OWNER' ]
@@ -16345,7 +16368,7 @@ function PreFilteredIssues(issues, THIS_ID) {
     .filter(hasValidBody)
     .filter(isNotThisIssues)
     .filter(hasAllowedCollaboratorTypes)
-    .map((issue) => ({ 
+    .map((issue) => ({
       ...issue,
       body: parse(issue.body), // STEP 3.
     }))
@@ -16366,7 +16389,7 @@ const IssueFields = [
   'state',
   'title',
   //'user',
-  //TODO:  we don't need all the user subkeys, this should work :( 
+  //TODO:  we don't need all the user subkeys, this should work :(
   // 'user.avatar_url',
   // 'user.gravatar_id',
   // 'user.id',
@@ -16385,7 +16408,7 @@ function SingleResponseData({ status, value }) {
   return {
     ..._.pick(value.data, IssueFields),
     status: value.status,
-    ghApiResponseStatus: status,  
+    ghApiResponseStatus: status,
   };
 }
 
@@ -16422,19 +16445,19 @@ function FilterMultiIssueResponse(allResponses) {
  * 1. Only pull desired params from ResponseObject
  * 2. Filter issues that don't meet pre-conditions
  * 3. Run issue body through issue-parser
- * 4. filter out issues where issue.body.blockers !== THIS_ID 
+ * 4. filter out issues where issue.body.blockers !== THIS_ID
 **/
 function validate(response, THIS_ID) {
 
   const doesBlockThisIssue = ((issue) => {
-    //step 4 
-    if (DEBUG) { 
+    //step 4
+    if (DEBUG) {
       console.log(`issue: ${jsLog(issue)}`);
       debug(`debug|issue: ${jsLog(issue)}`);
     }
     const blockers = issue.body.actions.blocks;
     return blockers.reduce((arr, curr) => {
-      if (DEBUG) { 
+      if (DEBUG) {
         console.log(`THIS: ${THIS_ID} | block-curr :${jsLog(curr)}`)
         debug(`THIS: ${THIS_ID} | block-curr :${jsLog(curr)}`);
       }
@@ -16445,7 +16468,7 @@ function validate(response, THIS_ID) {
   return issues.filter(doesBlockThisIssue);
 }
 
-module.exports = { SingleResponseData, MultiResponseData, FailResponseData, FilterMultiIssueResponse, validate}; 
+module.exports = { SingleResponseData, MultiResponseData, FailResponseData, FilterMultiIssueResponse, validate};
 
 
 
