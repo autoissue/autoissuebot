@@ -1,8 +1,8 @@
-const parse = require('./bodyParser');
+const { parse } = require('./bodyParser');
 
 
 test('single_issue_body ', () => {
-  body = 'blocked by: #31' 
+  body = 'blocked by: #31'
   expect(parse(body)).toEqual([
     { owner: '', repo: '', issue_number: 31 }
   ]);
@@ -10,7 +10,7 @@ test('single_issue_body ', () => {
 
 
 test('single issue other repo', () => {
-  body = 'Blocked by  angelkenneth/issue-closing-sample/issues#11' 
+  body = 'Blocked by  angelkenneth/issue-closing-sample/issues#11'
   expect(parse(body)).toEqual([
     { owner: 'angelkenneth', repo: 'issue-closing-sample', issue_number: 11 }
   ]);
@@ -18,7 +18,7 @@ test('single issue other repo', () => {
 
 test('multi_line_body', () => {
   body = `
-  Marvelous commit message 
+  Marvelous commit message
   Fixes #11 and #15
   Blocked by #12, Blocked by: #13, Blocked By:  #15745
   Blocked by: #22,Blocked by: #23, Blocked by: #25
