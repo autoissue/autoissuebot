@@ -1,6 +1,6 @@
-const { SingleResponseData, MultiResponseData, FailResponseData, FilterMultiIssueResponse, validate } = require('./validate'); 
+const { SingleResponseData, MultiResponseData, FailResponseData, FilterMultiIssueResponse, validate } = require('./validate');
 const results = require('../__tests__/getAllBlockerIssues.sample.json');
-
+// console.log(`json esults: ${JSON.stringify(results, null, 2)}`)
 
 test('FilterMultiIssueResponse', () => {
 

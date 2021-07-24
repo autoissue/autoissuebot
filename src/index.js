@@ -96,7 +96,7 @@ async function run_blocks(github, this_issue) {
   } catch (error) {
     if (DEBUG) {
       debug(`error: ${jsLog(error)}`);
-      console.log(`log:error: ${jsLog(error)}`)
+      // console.log(`log:error: ${jsLog(error)}`)
     }
     core.setFailed(error.message);
     process.exit(-1);
