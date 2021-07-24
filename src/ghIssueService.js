@@ -42,7 +42,8 @@ function getAllBlockerIssues(octokit, context, issues) {
 
 
 function postComment(octokit, blockers, issue, owner, repo) {
-  if (DEBUG) { debug(`postComment: ${blockers}`)}
+  // if (DEBUG) { debug(`postComment: ${blockers}`)}
+  console.log(`postComment: ${blockers}`)
   const blocker_str = blockers.map((blocker) => { return `#${blocker.number}` }).join(', ');
   const comment =`This issue cannot be closed at this time, it is dependent on the following issue(s): ${blocker_str}`;
   console.log(`comment: ${jsLog(comment)}`)
