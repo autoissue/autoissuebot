@@ -41,6 +41,7 @@ function _parse_all_blocked_by(line) {
 }
 
 function parse(body) {
+  console.log(`parse<body>: ${jsLog(body)}`)
   const lines = _linerizer(body);
   return _flatten_sort(lines.map(_parse_all_blocked_by));
 }
