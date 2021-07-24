@@ -1,11 +1,11 @@
 {
   "name": "@autoissue/autoissuebot",
   "version": "1.0.0",
-  "description": "",
+  "description": "AutoissueBot",
   "main": "dist/index.js",
   "scripts": {
-    "test": "jest",
-    "build": "ncc build src/index.js"
+    "build": "ncc build src/index.js",
+    "test": "jest"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
