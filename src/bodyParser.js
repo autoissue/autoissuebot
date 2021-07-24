@@ -17,9 +17,9 @@ function _flatten_sort(arr) {
 
 function _parse_all_blocked_by(line) {
   const blocked_by = ip(line).actions.blocked;
-  console.log(`_parse_all_blocked_by:: line: ${jsLog(line)}`);
+  // console.log(`_parse_all_blocked_by:: line: ${jsLog(line)}`);
   core.debug(`_parse_all_blocked_by:: line: ${jsLog(line)}`);
-  console.log(`_parse_all_blocked_by:: blocked_by: ${jsLog(blocked_by)}`);
+  // console.log(`_parse_all_blocked_by:: blocked_by: ${jsLog(blocked_by)}`);
   core.debug(`_parse_all_blocked_by:: blocked_by: ${jsLog(blocked_by)}`);
   if (blocked_by.length <= 0) {
     return [];
@@ -43,7 +43,8 @@ function _parse_all_blocked_by(line) {
 }
 
 function parse(body) {
-  console.log(`parse<body>: ${jsLog(body)}`)
+  // console.log(`parse<body>: ${jsLog(body)}`)
+  core.debug(`parse<body>: ${jsLog(body)}`)
   const lines = _linerizer(body);
   return _flatten_sort(lines.map(_parse_all_blocked_by));
 }
