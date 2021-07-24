@@ -27,7 +27,7 @@ function getIssue(octokit, { owner, repo, issue_number }) {
  * @param issues[].issue_number
  **/
 function getAllBlockerIssues(octokit, context, issues) {
-  //console.log(`issues: ${jsLog(issues)}`);
+  console.log(`getAllBlockerIssues: ${jsLog(issues)}`);
   return allSettled(issues.map((issue) => {
     return getIssue(octokit, {
       ...issue,
@@ -42,7 +42,7 @@ function getAllBlockerIssues(octokit, context, issues) {
 
 
 function postComment(octokit, blockers, issue, owner, repo) {
-  //if (DEBUG) { debug(`postComment: ${blockers}`)}
+  if (DEBUG) { debug(`postComment: ${blockers}`)}
   const blocker_str = blockers.map((blocker) => { return `#${blocker.number}` }).join(', ');
   const comment =`This issue cannot be closed at this time, it is dependent on the following issue(s): ${blocker_str}`;
   console.log(`comment: ${jsLog(comment)}`)
