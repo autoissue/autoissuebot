@@ -19,7 +19,7 @@
     "@actions/github": "^3.0.0",
     "github-client": "^0.8.0",
     "issue-parser": "^6.0.0",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "promise.allsettled": "^1.0.2"
   },
   "devDependencies": {
