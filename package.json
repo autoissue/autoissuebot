@@ -1,11 +1,12 @@
 {
   "name": "@autoissue/autoissuebot",
   "version": "1.0.0",
-  "description": "",
+  "description": "AutoissueBot",
   "main": "dist/index.js",
   "scripts": {
-    "test": "jest",
-    "rel": "ncc build src/index.js"
+    "ncc": "./node_modules/@vercel/ncc/dist/ncc/cli.js",
+    "build": "./node_modules/@vercel/ncc/dist/ncc/cli.js build src/index.js -m -s",
+    "test": "jest"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
@@ -22,6 +23,7 @@
     "promise.allsettled": "^1.0.2"
   },
   "devDependencies": {
+    "@vercel/ncc": "^0.29.0",
     "jest": "^26.4.2"
   }
 }
