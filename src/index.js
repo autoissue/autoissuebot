@@ -19,6 +19,8 @@ const { SingleResponseData, FilterMultiIssueResponse, validate } = require('./va
 const outputKey = 'blockers';
 const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
 
+console.log(`debug: ${jsLog(debug)}`)
+
 const THIS_ISSUE = parseInt(context.payload.issue.number, 10);
 debug(`THIS_ISSUE: ${THIS_ISSUE}`);
 
@@ -42,6 +44,8 @@ async function run_blocked_by(github, this_issue) {
   const this_body = github.context.payload.issue.body;
   const parsed = parse(this_body);
   const context = github.context;
+
+  debug(parsed);
   const results = await gh.getAllBlockerIssues(octokit, context, parsed);
 
   const [ fulfilled, rejected ] = FilterMultiIssueResponse(results);

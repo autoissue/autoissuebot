@@ -1,4 +1,5 @@
 const allSettled = require('promise.allsettled');
+const core = require('@actions/core');
 const jsLog = (obj) => (JSON.stringify(obj, null, 2) );
 const _ = require('lodash');
 
@@ -27,7 +28,8 @@ function getIssue(octokit, { owner, repo, issue_number }) {
  * @param issues[].issue_number
  **/
 function getAllBlockerIssues(octokit, context, issues) {
-  console.log(`getAllBlockerIssues: ${jsLog(issues)}`);
+  console.log(`getAllBlockerIssues:: ${jsLog(issues)}`);
+  core.debug(`getAllBlockerIssues:: ${jsLog(issues)}`);
   return allSettled(issues.map((issue) => {
     return getIssue(octokit, {
       ...issue,
