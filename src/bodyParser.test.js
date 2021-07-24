@@ -1,10 +1,29 @@
 const { parse } = require('./bodyParser');
 
 
+
+
+
+test("mixed mode doesn't work", () => {
+  body = `, blocks #23
+  Blocked by #12, Blocked by: #13
+  Other comments don't count either
+  Blocked By:  #15745
+  Yet more ignored comments and details about this issue
+  `;
+  expect(parse(body), toEqual([
+    { owner: '', repo: '', issue_number: 12 },
+    { owner: '', repo: '', issue_number: 13 },
+    { owner: '', repo: '', issue_number: 15745 },
+  ]))
+})
+
+
+
 test('single_issue_body ', () => {
   body = 'blocked by: #31'
   expect(parse(body)).toEqual([
-    { owner: '', repo: '', issue_number: 31 }
+    { owner: '', repo: '', issue_number: 31 },
   ]);
 });
 
